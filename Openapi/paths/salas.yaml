@@ -1,0 +1,79 @@
+/api/salas:
+  get:
+    summary: Obtener todas las salas
+    responses:
+      '200':
+        description: Lista de salas
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Sala'
+  post:
+    summary: Crear una nueva sala
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SalaInput'
+    responses:
+      '201':
+        description: Sala creada
+/api/salas/{id}:
+  get:
+    summary: Obtener una sala por ID
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      '200':
+        description: Detalles de la sala
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Sala'
+      '404':
+        description: Sala no encontrada
+  put:
+    summary: Actualizar una sala por ID
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SalaInput'
+    responses:
+      '200':
+        description: Sala actualizada
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Sala'
+      '400':
+        description: Datos de entrada inválidos
+      '404':
+        description: Sala no encontrada
+  delete:
+    summary: Eliminar una sala por ID
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      '204':
+        description: Sala eliminada
+      '404':
+        description: Sala no encontrada

@@ -1,0 +1,79 @@
+/api/reservas:
+  get:
+    summary: Obtener todas las reservas
+    responses:
+      '200':
+        description: Lista de reservas
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Reserva'
+  post:
+    summary: Crear una nueva reserva
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ReservaInput'
+    responses:
+      '201':
+        description: Reserva creada
+/api/reservas/{id}:
+  get:
+    summary: Obtener una reserva por ID
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      '200':
+        description: Detalles de la reserva
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reserva'
+      '404':
+        description: Reserva no encontrada
+  put:
+    summary: Actualizar una reserva por ID
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ReservaInput'
+    responses:
+      '200':
+        description: Reserva actualizada
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reserva'
+      '400':
+        description: Datos de entrada inválidos
+      '404':
+        description: Reserva no encontrada
+  delete:
+    summary: Eliminar una reserva por ID
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      '204':
+        description: Reserva eliminada
+      '404':
+        description: Reserva no encontrada

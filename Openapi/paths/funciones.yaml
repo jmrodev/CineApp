@@ -1,0 +1,79 @@
+/api/funciones:
+  get:
+    summary: Obtener todas las funciones
+    responses:
+      '200':
+        description: Lista de funciones
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Funcion'
+  post:
+    summary: Crear una nueva función
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/FuncionInput'
+    responses:
+      '201':
+        description: Función creada
+/api/funciones/{id}:
+  get:
+    summary: Obtener una función por ID
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      '200':
+        description: Detalles de la función
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Funcion'
+      '404':
+        description: Función no encontrada
+  put:
+    summary: Actualizar una función por ID
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/FuncionInput'
+    responses:
+      '200':
+        description: Función actualizada
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Funcion'
+      '400':
+        description: Datos de entrada inválidos
+      '404':
+        description: Función no encontrada
+  delete:
+    summary: Eliminar una función por ID
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      '204':
+        description: Función eliminada
+      '404':
+        description: Función no encontrada

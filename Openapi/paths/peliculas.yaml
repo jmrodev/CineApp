@@ -1,0 +1,79 @@
+/api/peliculas:
+  get:
+    summary: Obtener todas las películas
+    responses:
+      '200':
+        description: Lista de películas
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Pelicula'
+  post:
+    summary: Crear una nueva película
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PeliculaInput'
+    responses:
+      '201':
+        description: Película creada
+/api/peliculas/{id}:
+  get:
+    summary: Obtener una película por ID
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      '200':
+        description: Detalles de la película
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pelicula'
+      '404':
+        description: Película no encontrada
+  put:
+    summary: Actualizar una película por ID
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PeliculaInput'
+    responses:
+      '200':
+        description: Película actualizada
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pelicula'
+      '400':
+        description: Datos de entrada inválidos
+      '404':
+        description: Película no encontrada
+  delete:
+    summary: Eliminar una película por ID
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      '204':
+        description: Película eliminada
+      '404':
+        description: Película no encontrada

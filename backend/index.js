@@ -4,35 +4,26 @@ const app = express();
 const port = 3000;
 
 app.use(cors());
+app.use(express.json()); // for parsing application/json
 
-const movies = [
-    {
-        title: 'The Matrix',
-        genre: 'Sci-Fi',
-        schedule: '8:00 PM',
-        room: 'Sala 1',
-        available_seats: 25
-    },
-    {
-        title: 'The Lord of the Rings',
-        genre: 'Fantasy',
-        schedule: '9:00 PM',
-        room: 'Sala 2',
-        available_seats: 20
-    },
-    {
-        title: 'The Godfather',
-        genre: 'Crime',
-        schedule: '10:00 PM',
-        room: 'Sala 3',
-        available_seats: 15
-    }
-];
+// Routers
+const peliculasRouter = require('./routers/peliculas.js');
+const salasRouter = require('./routers/salas.js');
+const funcionesRouter = require('./routers/funciones.js');
+const clientesRouter = require('./routers/clientes.js');
+const reservasRouter = require('./routers/reservas.js');
 
-app.get('/movies', (req, res) => {
-    res.json(movies);
-});
+// Routes
+app.use('/api/peliculas', peliculasRouter);
+app.use('/api/salas', salasRouter);
+app.use('/api/funciones', funcionesRouter);
+app.use('/api/clientes', clientesRouter);
+app.use('/api/reservas', reservasRouter);
 
-app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
-});
+if (require.main === module) {
+  app.listen(port, () => {
+      console.log(`CineApp backend listening on port ${port}`);
+  });
+}
+
+module.exports = app;

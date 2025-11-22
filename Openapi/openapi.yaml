@@ -9,198 +9,27 @@ servers:
     description: Servidor de desarrollo
 
 paths:
-  /peliculas:
-    get:
-      summary: Obtener todas las películas
-      responses:
-        '200':
-          description: Lista de películas
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pelicula'
-    post:
-      summary: Crear una nueva película
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PeliculaInput'
-      responses:
-        '201':
-          description: Película creada
-
-  /peliculas/{pelicula_id}:
-    get:
-      summary: Obtener una película por ID
-      parameters:
-        - name: pelicula_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Detalles de la película
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Pelicula'
-
-  /salas:
-    get:
-      summary: Obtener todas las salas
-      responses:
-        '200':
-          description: Lista de salas
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Sala'
-
-  /funciones:
-    get:
-      summary: Obtener todas las funciones
-      responses:
-        '200':
-          description: Lista de funciones
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Funcion'
-
-  /clientes:
-    get:
-      summary: Obtener todos los clientes
-      responses:
-        '200':
-          description: Lista de clientes
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Cliente'
-
-  /reservas:
-    get:
-      summary: Obtener todas las reservas
-      responses:
-        '200':
-          description: Lista de reservas
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Reserva'
-    post:
-      summary: Crear una nueva reserva
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ReservaInput'
-      responses:
-        '201':
-          description: Reserva creada
+  /api/peliculas:
+    $ref: './paths/peliculas.yaml#/api/peliculas'
+  /api/peliculas/{id}:
+    $ref: './paths/peliculas.yaml#/api/peliculas/{id}'
+  /api/salas:
+    $ref: './paths/salas.yaml#/api/salas'
+  /api/salas/{id}:
+    $ref: './paths/salas.yaml#/api/salas/{id}'
+  /api/funciones:
+    $ref: './paths/funciones.yaml#/api/funciones'
+  /api/funciones/{id}:
+    $ref: './paths/funciones.yaml#/api/funciones/{id}'
+  /api/clientes:
+    $ref: './paths/clientes.yaml#/api/clientes'
+  /api/clientes/{id}:
+    $ref: './paths/clientes.yaml#/api/clientes/{id}'
+  /api/reservas:
+    $ref: './paths/reservas.yaml#/api/reservas'
+  /api/reservas/{id}:
+    $ref: './paths/reservas.yaml#/api/reservas/{id}'
 
 components:
   schemas:
-    Pelicula:
-      type: object
-      properties:
-        pelicula_id:
-          type: integer
-          example: 1
-        titulo:
-          type: string
-          example: 'The Matrix'
-        genero:
-          type: string
-          example: 'Sci-Fi'
-    PeliculaInput:
-      type: object
-      properties:
-        titulo:
-          type: string
-          example: 'The Matrix'
-        genero:
-          type: string
-          example: 'Sci-Fi'
-    Sala:
-      type: object
-      properties:
-        sala_id:
-          type: integer
-          example: 1
-        nombre_sala:
-          type: string
-          example: 'Sala 1'
-        capacidad:
-          type: integer
-          example: 100
-    Funcion:
-      type: object
-      properties:
-        funcion_id:
-          type: integer
-          example: 1
-        pelicula_id:
-          type: integer
-          example: 1
-        sala_id:
-          type: integer
-          example: 1
-        horario:
-          type: string
-          format: date-time
-          example: '2025-11-12T20:00:00Z'
-    Cliente:
-      type: object
-      properties:
-        cliente_id:
-          type: integer
-          example: 1
-        nombre_cliente:
-          type: string
-          example: 'John Doe'
-        email:
-          type: string
-          format: email
-          example: 'john.doe@example.com'
-    Reserva:
-      type: object
-      properties:
-        reserva_id:
-          type: integer
-          example: 1
-        funcion_id:
-          type: integer
-          example: 1
-        cliente_id:
-          type: integer
-          example: 1
-        numero_asientos:
-          type: integer
-          example: 2
-    ReservaInput:
-      type: object
-      properties:
-        funcion_id:
-          type: integer
-          example: 1
-        cliente_id:
-          type: integer
-          example: 1
-        numero_asientos:
-          type: integer
-          example: 2
+    $ref: './components/schemas.yaml#/schemas'
