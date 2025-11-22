@@ -20,21 +20,21 @@ El DFD Nivel 1 descompone el proceso principal "Sistema de CineApp" en sus subpr
 
 ```mermaid
 graph TD
-    subgraph Sistema de CineApp
+    subgraph SistemaCineApp["Sistema de CineApp"]
         C(Gestión de Películas)
         D(Gestión de Reservas)
     end
 
     A[Cliente] -->|Ver Películas| C
-    C -->|Consulta Películas| E[Base de Datos de Películas]
+    C -->|Consulta Películas| E[(Base de Datos<br/>de Películas)]
     E -->|Lista de Películas| C
     C -->|Muestra Películas| A
 
     A -->|Selecciona Película/Función| D
     A -->|Ingresa Datos de Reserva| D
-    D -->|Verifica Disponibilidad| F[Base de Datos de Funciones]
+    D -->|Verifica Disponibilidad| F[(Base de Datos<br/>de Funciones)]
     F -->|Disponibilidad de Asientos| D
-    D -->|Guarda Reserva| G[Base de Datos de Reservas]
+    D -->|Guarda Reserva| G[(Base de Datos<br/>de Reservas)]
     G -->|Confirmación de Reserva| D
     D -->|Confirma Reserva| A
 ```

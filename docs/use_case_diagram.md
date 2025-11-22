@@ -10,25 +10,24 @@ Este documento presenta los Diagramas de Casos de Uso para la aplicación CineAp
 ## Diagrama de Casos de Uso
 
 ```mermaid
-%% Diagrama de Casos de Uso
 graph TD
-    actor Cliente
-    actor Administrador
+    Cliente[👤 Cliente]
+    Administrador[👤 Administrador]
 
-    rectangle SistemaCineApp {
-        usecase "Ver Películas Disponibles" as UC1
-        usecase "Ver Detalles de Película" as UC2
-        usecase "Ver Funciones de Película" as UC3
-        usecase "Seleccionar Asientos" as UC4
-        usecase "Realizar Reserva" as UC5
-        usecase "Ver Mis Reservas" as UC6
-        usecase "Cancelar Reserva" as UC7
+    subgraph SistemaCineApp["Sistema CineApp"]
+        UC1((Ver Películas<br/>Disponibles))
+        UC2((Ver Detalles<br/>de Película))
+        UC3((Ver Funciones<br/>de Película))
+        UC4((Seleccionar<br/>Asientos))
+        UC5((Realizar<br/>Reserva))
+        UC6((Ver Mis<br/>Reservas))
+        UC7((Cancelar<br/>Reserva))
 
-        usecase "Gestionar Películas" as UC8
-        usecase "Gestionar Salas" as UC9
-        usecase "Gestionar Funciones" as UC10
-        usecase "Gestionar Usuarios" as UC11
-    }
+        UC8((Gestionar<br/>Películas))
+        UC9((Gestionar<br/>Salas))
+        UC10((Gestionar<br/>Funciones))
+        UC11((Gestionar<br/>Usuarios))
+    end
 
     Cliente --> UC1
     Cliente --> UC2
@@ -43,8 +42,14 @@ graph TD
     Administrador --> UC10
     Administrador --> UC11
 
-    UC4 .> UC5 : include
-    UC3 .> UC2 : extends
+    UC4 -.->|include| UC5
+    UC3 -.->|extends| UC2
+
+    classDef actor fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef usecase fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    
+    class Cliente,Administrador actor
+    class UC1,UC2,UC3,UC4,UC5,UC6,UC7,UC8,UC9,UC10,UC11 usecase
 ```
 
 ## Descripción de Casos de Uso

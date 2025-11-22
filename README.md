@@ -104,3 +104,21 @@ Los tests cubren todas las funcionalidades del sistema:
 Test Suites: 5 passed, 5 total
 Tests:       40 passed, 40 total
 ```
+
+## 📚 Documentación
+
+El proyecto incluye documentación completa con diagramas técnicos:
+
+- **[Arquitectura del Sistema](./docs/arquitectura_sistema.md)** - Vista general de componentes
+- **[Diagrama UML de Base de Datos](./database/database_uml.md)** - Estructura de tablas
+- **[Diagrama de Flujo de Datos](./docs/data_flow_diagram.md)** - Flujo de información
+- **[Casos de Uso](./docs/use_case_diagram.md)** - Interacciones del sistema
+- **[Flujo de Trabajo](./docs/workflow_diagram.md)** - Proceso de reserva
+- **[Especificación OpenAPI](./Openapi/openapi.yaml)** - Documentación de la API
+
+### 📖 Guía para Crear Diagramas
+Si necesitas crear o modificar diagramas, consulta la **[Guía de Creación de Diagramas](./docs/GUIA_CREACION_DIAGRAMAS.md)** que incluye:
+- Sintaxis de Mermaid
+- Plantillas y ejemplos
+- Herramientas recomendadas
+- Solución de problemas comunes
