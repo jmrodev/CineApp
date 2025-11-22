@@ -20,6 +20,10 @@ app.use('/api/funciones', funcionesRouter);
 app.use('/api/clientes', clientesRouter);
 app.use('/api/reservas', reservasRouter);
 
-app.listen(port, () => {
-    console.log(`CineApp backend listening on port ${port}`);
-});
+if (require.main === module) {
+  app.listen(port, () => {
+      console.log(`CineApp backend listening on port ${port}`);
+  });
+}
+
+module.exports = app;
