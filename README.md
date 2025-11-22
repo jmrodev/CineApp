@@ -122,3 +122,11 @@ Si necesitas crear o modificar diagramas, consulta la **[Guía de Creación de D
 - Plantillas y ejemplos
 - Herramientas recomendadas
 - Solución de problemas comunes
+
+### 🤝 Trabajo Colaborativo
+Para trabajar en equipo con Git y mantener el código sincronizado, consulta la **[Guía de Colaboración con Git](./docs/GUIA_COLABORACION_GIT.md)** que incluye:
+- Flujo básico de pull/push
+- Trabajo con ramas
+- Resolución de conflictos
+- Mejores prácticas
+- Herramientas recomendadas (GitHub Desktop, VS Code)
