@@ -6,6 +6,33 @@ un título, género, horario y sala. Los clientes pueden reservar entradas para 
 película específica con anticipación y se debe mostrar cuántas entradas quedan
 disponibles por sala. Además, permite ver cuáles son las películas más reservadas
 
+## 👥 Colaboradores
+
+Este proyecto es desarrollado y mantenido por:
+
+| Avatar | Nombre | GitHub | Rol |
+|--------|--------|--------|-----|
+| <img src="https://avatars.githubusercontent.com/u/32540750?v=4" width="50" height="50" style="border-radius: 50%"> | **Juan Marcelo Rodriguez** | [@jmrodev](https://github.com/jmrodev) | Admin |
+| <img src="https://avatars.githubusercontent.com/u/83104313?v=4" width="50" height="50" style="border-radius: 50%"> | **fer0809** | [@fer0809](https://github.com/fer0809) | Colaborador |
+| <img src="https://avatars.githubusercontent.com/u/171627636?v=4" width="50" height="50" style="border-radius: 50%"> | **JuanIRodri** | [@JuanIRodri](https://github.com/JuanIRodri) | Colaborador |
+
+### 🤝 Cómo Contribuir
+
+Si eres colaborador del proyecto, consulta la [Guía de Colaboración con Git](./docs/GUIA_COLABORACION_GIT.md) para conocer el flujo de trabajo.
+
+**Comandos básicos:**
+```bash
+# Obtener últimos cambios
+git pull --rebase origin main
+
+# Trabajar y subir cambios
+git add .
+git commit -m "Descripción de cambios"
+git pull --rebase origin main
+git push origin main
+```
+
+
 ## Clonar el Proyecto
 
 Para obtener una copia local de este proyecto, puedes usar GitHub CLI o Git.
