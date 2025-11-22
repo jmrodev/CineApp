@@ -6,6 +6,22 @@ un título, género, horario y sala. Los clientes pueden reservar entradas para 
 película específica con anticipación y se debe mostrar cuántas entradas quedan
 disponibles por sala. Además, permite ver cuáles son las películas más reservadas
 
+## Clonar el Proyecto
+
+Para obtener una copia local de este proyecto, puedes usar GitHub CLI o Git.
+
+### Con GitHub CLI
+Si tienes GitHub CLI instalado, abre tu terminal y ejecuta:
+```bash
+gh repo clone https://github.com/jmrodev/CineApp.git
+```
+
+### Con Git
+Si prefieres usar Git, abre tu terminal y ejecuta:
+```bash
+git clone https://github.com/jmrodev/CineApp.git
+```
+
 ## Instrucciones de Inicio
 
 ### Backend
@@ -18,7 +34,7 @@ Para iniciar el servidor backend, sigue estos pasos:
 Para iniciar la aplicación frontend con un servidor local:
 1. Instala `http-server` globalmente (si no lo has hecho antes):
    ```
-   npm install http-server -g
+   sudo npm install http-server -g
    ```
    (Puede que necesites usar `sudo` en Linux o macOS)
 2. Navega al directorio `frontend`.
