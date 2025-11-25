@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: './.env.development' });
 const express = require('express');
 const cors = require('cors');
 const app = express();
@@ -20,6 +20,12 @@ app.use('/api/salas', salasRouter);
 app.use('/api/funciones', funcionesRouter);
 app.use('/api/clientes', clientesRouter);
 app.use('/api/reservas', reservasRouter);
+
+// Global error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack); // Log the error stack trace
+  res.status(500).send('Something broke!');
+});
 
 if (require.main === module) {
   app.listen(port, () => {

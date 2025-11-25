@@ -8,6 +8,7 @@ router.get('/', async (req, res) => {
     const [rows] = await pool.query('SELECT * FROM Pelicula');
     res.json(rows);
   } catch (error) {
+    console.error(error); // Log the error
     res.status(500).json({ error: error.message });
   }
 });
@@ -21,6 +22,7 @@ router.get('/:id', async (req, res) => {
     }
     res.json(rows[0]);
   } catch (error) {
+    console.error(error); // Log the error
     res.status(500).json({ error: error.message });
   }
 });
@@ -35,6 +37,7 @@ router.post('/', async (req, res) => {
     const [result] = await pool.query('INSERT INTO Pelicula (titulo, genero) VALUES (?, ?)', [titulo, genero]);
     res.status(201).json({ pelicula_id: result.insertId, titulo, genero });
   } catch (error) {
+    console.error(error); // Log the error
     res.status(500).json({ error: error.message });
   }
 });
@@ -52,6 +55,7 @@ router.put('/:id', async (req, res) => {
     }
     res.json({ pelicula_id: req.params.id, titulo, genero });
   } catch (error) {
+    console.error(error); // Log the error
     res.status(500).json({ error: error.message });
   }
 });
@@ -65,6 +69,7 @@ router.delete('/:id', async (req, res) => {
     }
     res.status(204).send();
   } catch (error) {
+    console.error(error); // Log the error
     res.status(500).json({ error: error.message });
   }
 });
