@@ -7,32 +7,50 @@ router.get('/', async (req, res) => {
   try {
     const query = `
       SELECT
-          S.*,
-          P.titulo AS pelicula_actual_titulo,
-          P.pelicula_id AS pelicula_actual_id,
-          F.funcion_id AS funcion_actual_id,
-          F.horario AS funcion_actual_horario
+          S.sala_id,
+          S.nombre_sala,
+          S.capacidad,
+          F.funcion_id,
+          F.pelicula_id,
+          F.horario,
+          P.titulo AS pelicula_titulo
       FROM
           Sala S
       LEFT JOIN
-          (SELECT
-              funcion_id,
-              pelicula_id,
-              sala_id,
-              horario,
-              ROW_NUMBER() OVER (PARTITION BY sala_id ORDER BY horario ASC) as rn
-          FROM
-              Funcion
-          WHERE
-              horario > NOW()
-          ) AS F ON S.sala_id = F.sala_id AND F.rn = 1
+          Funcion F ON S.sala_id = F.sala_id
       LEFT JOIN
-          Pelicula P ON F.pelicula_id = P.pelicula_id;
+          Pelicula P ON F.pelicula_id = P.pelicula_id
+      WHERE
+          F.horario > NOW() OR F.funcion_id IS NULL
+      ORDER BY
+          S.sala_id, F.horario;
     `;
     const [rows] = await pool.query(query);
-    res.json(rows);
+
+    const salasMap = new Map();
+
+    rows.forEach(row => {
+      if (!salasMap.has(row.sala_id)) {
+        salasMap.set(row.sala_id, {
+          sala_id: row.sala_id,
+          nombre_sala: row.nombre_sala,
+          capacidad: row.capacidad,
+          funciones: []
+        });
+      }
+      if (row.funcion_id) {
+        salasMap.get(row.sala_id).funciones.push({
+          funcion_id: row.funcion_id,
+          pelicula_id: row.pelicula_id,
+          pelicula_titulo: row.pelicula_titulo,
+          horario: row.horario
+        });
+      }
+    });
+
+    res.json(Array.from(salasMap.values()));
   } catch (error) {
-    console.error('Error al obtener las salas con película actual:', error);
+    console.error('Error al obtener las salas con funciones:', error);
     res.status(500).json({ error: error.message });
   }
 });

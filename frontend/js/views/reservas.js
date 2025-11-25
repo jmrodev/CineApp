@@ -1,7 +1,8 @@
 import { getReservas, createReserva, updateReserva, deleteReserva } from '../services/reservas.js';
 import { getClientes } from '../services/clientes.js';
 import { getFunciones } from '../services/funciones.js';
-import { getPeliculas } from '../services/peliculas.js'; // Import getPeliculas
+import { getPeliculas } from '../services/peliculas.js';
+import { getSalaById } from '../services/salas.js'; // Import getSalaById
 import { showConfirmModal } from '../main.js';
 
 /**
@@ -17,16 +18,20 @@ export async function renderReservasPage(container) {
         container.innerHTML = `
             <div class="loading-indicator">Cargando reservas...</div>
         `;
-        const [reservas, clientes, funciones, peliculas] = await Promise.all([ // Fetch peliculas
-            getReservas(currentFilters), // Pasar filtros actuales
+        const [reservas, clientes, funciones, peliculas] = await Promise.all([
+            getReservas(currentFilters),
             getClientes(),
             getFunciones(),
-            getPeliculas() // Fetch peliculas
+            getPeliculas()
         ]);
         console.log('Reservas recibidas:', reservas);
         console.log('Clientes recibidos:', clientes);
         console.log('Funciones recibidas:', funciones);
         console.log('Películas recibidas:', peliculas);
+
+        // Create a map for easy lookup of functions and their sala_id
+        const funcionesMap = new Map(funciones.map(f => [f.funcion_id, f]));
+        let currentSalaCapacity = 0; // Variable to store the capacity of the currently selected sala
 
         container.innerHTML = `
             <h1>Gestión de Reservas</h1>
@@ -54,7 +59,7 @@ export async function renderReservasPage(container) {
                                     ${funciones.map(funcion => {
                                         const pelicula = peliculas.find(p => p.pelicula_id === funcion.pelicula_id);
                                         const peliculaTitulo = pelicula ? pelicula.titulo : 'Desconocida';
-                                        return `<option value="${funcion.funcion_id}">${peliculaTitulo} - ${new Date(funcion.horario).toLocaleString()}</option>`;
+                                        return `<option value="${funcion.funcion_id}" data-sala-id="${funcion.sala_id}">${peliculaTitulo} - ${new Date(funcion.horario).toLocaleString()}</option>`;
                                     }).join('')}
                                 </select>
                             </div>
@@ -142,7 +147,28 @@ export async function renderReservasPage(container) {
             reservaIdInput.value = '';
             modalTitle.textContent = 'Crear Nueva Reserva';
             submitReservaFormBtn.textContent = 'Crear Reserva';
+            currentSalaCapacity = 0; // Reset capacity
         };
+
+        // Event listener for funcionIdSelect change
+        funcionIdSelect.addEventListener('change', async () => {
+            const selectedFuncionId = parseInt(funcionIdSelect.value);
+            if (selectedFuncionId) {
+                const selectedFuncion = funcionesMap.get(selectedFuncionId);
+                if (selectedFuncion && selectedFuncion.sala_id) {
+                    const sala = await getSalaById(selectedFuncion.sala_id);
+                    if (sala) {
+                        currentSalaCapacity = sala.capacidad;
+                        console.log(`Capacidad de la sala seleccionada: ${currentSalaCapacity}`);
+                    } else {
+                        currentSalaCapacity = 0;
+                        console.error('No se pudo obtener la capacidad de la sala.');
+                    }
+                }
+            } else {
+                currentSalaCapacity = 0;
+            }
+        });
 
         // Event listeners for modal
         addReservaBtn.addEventListener('click', () => {
@@ -160,7 +186,7 @@ export async function renderReservasPage(container) {
         reservas.forEach(reserva => {
             const cliente = clientes.find(c => c.cliente_id === reserva.cliente_id);
             const funcion = funciones.find(f => f.funcion_id === reserva.funcion_id);
-            const pelicula = funcion ? peliculas.find(p => p.pelicula_id === funcion.pelicula_id) : null; // Find pelicula
+            const pelicula = funcion ? peliculas.find(p => p.pelicula_id === funcion.pelicula_id) : null;
             const funcionDetails = funcion ? `${pelicula ? pelicula.titulo : 'Desconocida'} - ${new Date(funcion.horario).toLocaleString()}` : 'Función Desconocida';
 
             const reservaCard = document.createElement('div');
@@ -171,9 +197,9 @@ export async function renderReservasPage(container) {
                 <p><strong>Función:</strong> ${funcionDetails}</p>
                 <p><strong>Asientos:</strong> ${reserva.numero_asientos}</p>
                 <div class="card-actions">
-                    <button class="btn-edit" data-id="${reserva.reserva_id}" 
-                            data-cliente-id="${reserva.cliente_id}" 
-                            data-funcion-id="${reserva.funcion_id}" 
+                    <button class="btn-edit" data-id="${reserva.reserva_id}"
+                            data-cliente-id="${reserva.cliente_id}"
+                            data-funcion-id="${reserva.funcion_id}"
                             data-numero-asientos="${reserva.numero_asientos}">Editar</button>
                     <button class="btn-delete" data-id="${reserva.reserva_id}">Eliminar</button>
                 </div>
@@ -192,10 +218,15 @@ export async function renderReservasPage(container) {
                 return;
             }
 
+            // Validation for seat capacity
+            if (currentSalaCapacity > 0 && numero_asientos > currentSalaCapacity) {
+                showMessage(`El número de asientos (${numero_asientos}) excede la capacidad de la sala (${currentSalaCapacity}).`, 'error');
+                return;
+            }
+
             const reservaData = { cliente_id, funcion_id, numero_asientos };
 
             if (editingReservaId) {
-                // Actualizar reserva
                 const updatedReserva = await updateReserva(editingReservaId, reservaData);
                 if (updatedReserva) {
                     showMessage('Reserva actualizada exitosamente.', 'success');
@@ -203,7 +234,6 @@ export async function renderReservasPage(container) {
                     showMessage('Error al actualizar la reserva.', 'error');
                 }
             } else {
-                // Crear reserva
                 const newReserva = await createReserva(reservaData);
                 if (newReserva) {
                     showMessage('Reserva creada exitosamente.', 'success');
@@ -213,7 +243,7 @@ export async function renderReservasPage(container) {
             }
 
             closeModal();
-            await fetchAndRenderReservas(); // Volver a renderizar la lista
+            await fetchAndRenderReservas();
         });
 
         reservasContainer.addEventListener('click', async (event) => {
@@ -224,6 +254,10 @@ export async function renderReservasPage(container) {
                 numeroAsientosInput.value = parseInt(event.target.dataset.numeroAsientos);
                 reservaIdInput.value = editingReservaId;
                 
+                // Manually trigger change event to load sala capacity for editing
+                const changeEvent = new Event('change');
+                funcionIdSelect.dispatchEvent(changeEvent);
+
                 modalTitle.textContent = 'Editar Reserva';
                 submitReservaFormBtn.textContent = 'Actualizar Reserva';
                 openModal();
@@ -233,7 +267,7 @@ export async function renderReservasPage(container) {
                     const success = await deleteReserva(reservaIdToDelete);
                     if (success) {
                         showMessage('Reserva eliminada exitosamente.', 'success');
-                        await fetchAndRenderReservas(); // Volver a renderizar la lista
+                        await fetchAndRenderReservas();
                     } else {
                         showMessage('Error al eliminar la reserva.', 'error');
                     }
@@ -260,5 +294,5 @@ export async function renderReservasPage(container) {
         });
     };
 
-    fetchAndRenderReservas(); // Llamada inicial para renderizar
+    fetchAndRenderReservas();
 }
