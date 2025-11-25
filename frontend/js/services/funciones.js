@@ -72,11 +72,14 @@ export async function deleteFuncion(id) {
             method: 'DELETE',
         });
         if (!response.ok) {
-            throw new Error(`Error en la red: ${response.statusText}`);
+            const errorData = await response.json(); // Attempt to parse error message from backend
+            console.log('Error data from backend:', errorData); // Added logging
+            throw new Error(errorData.message || `Error en la red: ${response.statusText}`);
         }
         return response.status === 204;
     } catch (error) {
         console.error(`Error al eliminar la función con ID ${id}:`, error);
-        return false;
+        // Re-throw the error so the calling component can catch it and display the message
+        throw error;
     }
 }

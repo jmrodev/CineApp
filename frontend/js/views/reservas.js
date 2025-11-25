@@ -29,9 +29,11 @@ export async function renderReservasPage(container) {
         console.log('Funciones recibidas:', funciones);
         console.log('Películas recibidas:', peliculas);
 
-        // Create a map for easy lookup of functions and their sala_id
+        // Create a map for easy lookup of functions and their sala_id, capacidad, and asientos_reservados
         const funcionesMap = new Map(funciones.map(f => [f.funcion_id, f]));
         let currentSalaCapacity = 0; // Variable to store the capacity of the currently selected sala
+        let currentAsientosReservados = 0; // Variable to store reserved seats for the selected function
+        let currentAsientosDisponibles = 0; // Variable to store available seats for the selected function
 
         container.innerHTML = `
             <h1>Gestión de Reservas</h1>
@@ -58,8 +60,8 @@ export async function renderReservasPage(container) {
                                     <option value="">Seleccione una función</option>
                                     ${funciones.map(funcion => {
                                         const pelicula = peliculas.find(p => p.pelicula_id === funcion.pelicula_id);
-                                        const peliculaTitulo = pelicula ? pelicula.titulo : 'Desconocida';
-                                        return `<option value="${funcion.funcion_id}" data-sala-id="${funcion.sala_id}">${peliculaTitulo} - ${new Date(funcion.horario).toLocaleString()}</option>`;
+                                        const peliculaTitulo = funcion.pelicula_titulo || (pelicula ? pelicula.titulo : 'Desconocida');
+                                        return `<option value="${funcion.funcion_id}" data-sala-id="${funcion.sala_id}">${peliculaTitulo} - ${new Date(funcion.horario).toLocaleString()} (Disp: ${funcion.sala_capacidad - funcion.asientos_reservados})</option>`;
                                     }).join('')}
                                 </select>
                             </div>
@@ -89,7 +91,7 @@ export async function renderReservasPage(container) {
                         <option value="">Todas las Funciones</option>
                         ${funciones.map(funcion => {
                             const pelicula = peliculas.find(p => p.pelicula_id === funcion.pelicula_id);
-                            const peliculaTitulo = pelicula ? pelicula.titulo : 'Desconocida';
+                            const peliculaTitulo = funcion.pelicula_titulo || (pelicula ? pelicula.titulo : 'Desconocida');
                             return `<option value="${funcion.funcion_id}" ${currentFilters.funcion_id == funcion.funcion_id ? 'selected' : ''}>${peliculaTitulo} - ${new Date(funcion.horario).toLocaleString()}</option>`;
                         }).join('')}
                     </select>
@@ -148,6 +150,8 @@ export async function renderReservasPage(container) {
             modalTitle.textContent = 'Crear Nueva Reserva';
             submitReservaFormBtn.textContent = 'Crear Reserva';
             currentSalaCapacity = 0; // Reset capacity
+            currentAsientosReservados = 0; // Reset reserved seats
+            currentAsientosDisponibles = 0; // Reset available seats
         };
 
         // Event listener for funcionIdSelect change
@@ -155,18 +159,21 @@ export async function renderReservasPage(container) {
             const selectedFuncionId = parseInt(funcionIdSelect.value);
             if (selectedFuncionId) {
                 const selectedFuncion = funcionesMap.get(selectedFuncionId);
-                if (selectedFuncion && selectedFuncion.sala_id) {
-                    const sala = await getSalaById(selectedFuncion.sala_id);
-                    if (sala) {
-                        currentSalaCapacity = sala.capacidad;
-                        console.log(`Capacidad de la sala seleccionada: ${currentSalaCapacity}`);
-                    } else {
-                        currentSalaCapacity = 0;
-                        console.error('No se pudo obtener la capacidad de la sala.');
-                    }
+                if (selectedFuncion) {
+                    currentSalaCapacity = selectedFuncion.sala_capacidad;
+                    currentAsientosReservados = selectedFuncion.asientos_reservados;
+                    currentAsientosDisponibles = currentSalaCapacity - currentAsientosReservados;
+                    console.log(`Sala Capacidad: ${currentSalaCapacity}, Asientos Reservados: ${currentAsientosReservados}, Asientos Disponibles: ${currentAsientosDisponibles}`);
+                } else {
+                    currentSalaCapacity = 0;
+                    currentAsientosReservados = 0;
+                    currentAsientosDisponibles = 0;
+                    console.error('No se pudo obtener la información de la función.');
                 }
             } else {
                 currentSalaCapacity = 0;
+                currentAsientosReservados = 0;
+                currentAsientosDisponibles = 0;
             }
         });
 
@@ -187,7 +194,7 @@ export async function renderReservasPage(container) {
             const cliente = clientes.find(c => c.cliente_id === reserva.cliente_id);
             const funcion = funciones.find(f => f.funcion_id === reserva.funcion_id);
             const pelicula = funcion ? peliculas.find(p => p.pelicula_id === funcion.pelicula_id) : null;
-            const funcionDetails = funcion ? `${pelicula ? pelicula.titulo : 'Desconocida'} - ${new Date(funcion.horario).toLocaleString()}` : 'Función Desconocida';
+            const funcionDetails = funcion ? `${funcion.pelicula_titulo || (pelicula ? pelicula.titulo : 'Desconocida')} - ${new Date(funcion.horario).toLocaleString()}` : 'Función Desconocida';
 
             const reservaCard = document.createElement('div');
             reservaCard.className = 'card';
@@ -218,9 +225,9 @@ export async function renderReservasPage(container) {
                 return;
             }
 
-            // Validation for seat capacity
-            if (currentSalaCapacity > 0 && numero_asientos > currentSalaCapacity) {
-                showMessage(`El número de asientos (${numero_asientos}) excede la capacidad de la sala (${currentSalaCapacity}).`, 'error');
+            // Validation for available seats
+            if (numero_asientos > currentAsientosDisponibles) {
+                showMessage(`El número de asientos (${numero_asientos}) excede los asientos disponibles (${currentAsientosDisponibles}).`, 'error');
                 return;
             }
 
@@ -254,7 +261,7 @@ export async function renderReservasPage(container) {
                 numeroAsientosInput.value = parseInt(event.target.dataset.numeroAsientos);
                 reservaIdInput.value = editingReservaId;
                 
-                // Manually trigger change event to load sala capacity for editing
+                // Manually trigger change event to load sala capacity and reserved seats for editing
                 const changeEvent = new Event('change');
                 funcionIdSelect.dispatchEvent(changeEvent);
 

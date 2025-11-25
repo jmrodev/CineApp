@@ -161,17 +161,20 @@ export async function renderFuncionesPage(container) {
         });
 
         funciones.forEach(funcion => {
-            const pelicula = peliculas.find(p => p.pelicula_id === funcion.pelicula_id);
-            const sala = salas.find(s => s.sala_id === funcion.sala_id);
+            // The backend now provides pelicula_titulo and sala_capacidad directly
+            const peliculaTitulo = funcion.pelicula_titulo || 'Desconocida';
+            const salaNombre = salas.find(s => s.sala_id === funcion.sala_id)?.nombre_sala || 'Desconocida';
             const formattedHorario = new Date(funcion.horario).toLocaleString();
+            const asientosRestantes = funcion.sala_capacidad - funcion.asientos_reservados;
 
             const funcionCard = document.createElement('div');
             funcionCard.className = 'card';
             funcionCard.innerHTML = `
                 <h3>Función #${funcion.funcion_id}</h3>
-                <p><strong>Película:</strong> ${pelicula ? pelicula.titulo : 'Desconocida'}</p>
-                <p><strong>Sala:</strong> ${sala ? sala.nombre_sala : 'Desconocida'}</p>
+                <p><strong>Película:</strong> ${peliculaTitulo}</p>
+                <p><strong>Sala:</strong> ${salaNombre} (Capacidad: ${funcion.sala_capacidad})</p>
                 <p><strong>Horario:</strong> ${formattedHorario}</p>
+                <p><strong>Asientos Restantes:</strong> ${asientosRestantes}</p>
                 <div class="card-actions">
                     <button class="btn-edit" data-id="${funcion.funcion_id}" 
                             data-pelicula-id="${funcion.pelicula_id}" 
@@ -231,15 +234,20 @@ export async function renderFuncionesPage(container) {
                 openModal();
             } else if (event.target.classList.contains('btn-delete')) {
                 const funcionIdToDelete = parseInt(event.target.dataset.id);
-                if (confirm(`¿Está seguro de que desea eliminar la función con ID ${funcionIdToDelete}?`)) {
-                    const success = await deleteFuncion(funcionIdToDelete);
-                    if (success) {
-                        showMessage('Función eliminada exitosamente.', 'success');
-                        await fetchAndRenderFunciones(); // Volver a renderizar la lista
-                    } else {
-                        showMessage('Error al eliminar la función.', 'error');
+                showConfirmModal(`¿Está seguro de que desea eliminar la función con ID ${funcionIdToDelete}?`, async () => {
+                    try {
+                        const success = await deleteFuncion(funcionIdToDelete);
+                        if (success) {
+                            showMessage('Función eliminada exitosamente.', 'success');
+                            await fetchAndRenderFunciones(); // Volver a renderizar la lista
+                        } else {
+                            // This case should ideally not be reached if deleteFuncion throws on error
+                            showMessage('Error al eliminar la función.', 'error');
+                        }
+                    } catch (error) {
+                        showMessage(`Error al eliminar la función: ${error.message}`, 'error');
                     }
-                }
+                });
             }
         });
 
