@@ -160,7 +160,7 @@ async function loadMovies(moviesListContainer) {
 
     moviesListContainer.innerHTML = movies.map(movie => `
         <div class="movie-card">
-            ${movie.imagen ? `<img src="${movie.imagen}" alt="${movie.titulo}" class="movie-image">` : ''}
+            ${movie.imagen ? `<img src="http://localhost:3000${movie.imagen}" alt="${movie.titulo}" class="movie-image">` : ''}
             <h2>${movie.titulo}</h2>
             <p><strong>Género:</strong> ${movie.genero}</p>
             <div class="movie-actions">
@@ -184,7 +184,7 @@ async function loadMovies(moviesListContainer) {
                 const previewImg = document.querySelector('#image-preview img');
                 const previewContainer = document.getElementById('image-preview');
                 if (movie.imagen) {
-                    previewImg.src = movie.imagen;
+                    previewImg.src = `http://localhost:3000${movie.imagen}`; // Prepend backend URL
                     previewContainer.style.display = 'block';
                 } else {
                     previewImg.src = '';
