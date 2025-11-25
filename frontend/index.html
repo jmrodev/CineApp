@@ -1,15 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="data:image/png;base64,iVBORw0KGgo=">
+    <title>CineApp - Tu portal de cine</title>
     <link rel="stylesheet" href="style/style.css">
-    <title>Cine</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
 </head>
 <body>
-    <h1 id="titulo">Cartelera</h1>
-    <div id="app"></div>
+    <header>
+        <nav>
+            <a href="#peliculas" class="logo">CineApp</a>
+            <ul>
+                <li><a href="#peliculas">Películas</a></li>
+                <li><a href="#salas">Salas</a></li>
+                <li><a href="#funciones">Funciones</a></li>
+                <li><a href="#reservas">Reservas</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main id="app">
+        <!-- Contenido de las páginas se cargará aquí dinámicamente -->
+    </main>
+
+    <footer>
+        <p>&copy; 2025 CineApp. Todos los derechos reservados.</p>
+    </footer>
+
     <script type="module" src="js/main.js"></script>
 </body>
 </html>

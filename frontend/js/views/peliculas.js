@@ -1,4 +1,4 @@
-import { getPeliculas } from '../services/api.js';
+import { getPeliculas } from '../services/peliculas.js';
 
 /**
  * Obtiene las películas y las renderiza en el contenedor proporcionado.
@@ -8,6 +8,7 @@ export async function renderPeliculasPage(container) {
     container.innerHTML = '<p>Cargando películas...</p>';
 
     const movies = await getPeliculas();
+    console.log('Películas recibidas:', movies);
 
     if (movies.length === 0) {
         container.innerHTML = '<p>No hay películas para mostrar.</p>';
