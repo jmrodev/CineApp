@@ -84,21 +84,33 @@ schemas:
         example: 1
       nombre_cliente:
         type: string
-        example: 'John Doe'
+        example: 'John'
+      apellido:
+        type: string
+        example: 'Doe'
       email:
         type: string
         format: email
         example: 'john.doe@example.com'
+      telefono:
+        type: string
+        example: '+15551234567'
   ClienteInput:
     type: object
     properties:
       nombre_cliente:
         type: string
-        example: 'John Doe'
+        example: 'John'
+      apellido:
+        type: string
+        example: 'Doe'
       email:
         type: string
         format: email
         example: 'john.doe@example.com'
+      telefono:
+        type: string
+        example: '+15551234567'
   Reserva:
     type: object
     properties:

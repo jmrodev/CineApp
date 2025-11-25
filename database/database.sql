@@ -33,7 +33,9 @@ CREATE TABLE IF NOT EXISTS Funcion (
 CREATE TABLE IF NOT EXISTS Cliente (
     cliente_id INT PRIMARY KEY AUTO_INCREMENT,
     nombre_cliente VARCHAR(255) NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL
+    apellido VARCHAR(255),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    telefono VARCHAR(255)
 );
 
 -- Create Reserva table

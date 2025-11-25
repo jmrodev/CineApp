@@ -2,10 +2,29 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 
-// GET all reservas
+// GET all reservas with optional filters
 router.get('/', async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM Reserva');
+    const { cliente_id, funcion_id } = req.query;
+    let query = 'SELECT * FROM Reserva';
+    const params = [];
+
+    if (cliente_id || funcion_id) {
+      query += ' WHERE';
+      if (cliente_id) {
+        query += ' cliente_id = ?';
+        params.push(cliente_id);
+      }
+      if (funcion_id) {
+        if (cliente_id) {
+          query += ' AND';
+        }
+        query += ' funcion_id = ?';
+        params.push(funcion_id);
+      }
+    }
+
+    const [rows] = await pool.query(query, params);
     res.json(rows);
   } catch (error) {
     res.status(500).json({ error: error.message });

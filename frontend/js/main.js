@@ -2,12 +2,14 @@ import { renderPeliculasPage } from './views/peliculas.js';
 import { renderSalasPage } from './views/salas.js';
 import { renderFuncionesPage } from './views/funciones.js';
 import { renderReservasPage } from './views/reservas.js';
+import { renderClientesPage } from './views/clientes.js';
 
 const routes = {
     '#peliculas': renderPeliculasPage,
     '#salas': renderSalasPage,
     '#funciones': renderFuncionesPage,
     '#reservas': renderReservasPage,
+    '#clientes': renderClientesPage,
     '': renderPeliculasPage // Default route
 };
 

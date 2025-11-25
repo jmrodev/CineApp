@@ -1,35 +1,239 @@
-import { getFunciones } from '../services/funciones.js';
+import { getFunciones, createFuncion, updateFuncion, deleteFuncion } from '../services/funciones.js';
+import { getPeliculas } from '../services/peliculas.js';
+import { getSalas } from '../services/salas.js';
 
 /**
- * Obtiene las funciones y las renderiza en el contenedor proporcionado.
+ * Formats a Date object into a string suitable for datetime-local input.
+ * @param {Date} date - The date object to format.
+ * @returns {string} The formatted date string (YYYY-MM-DDTHH:MM).
+ */
+function formatDatetimeLocal(date) {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+/**
+ * Renderiza la página de gestión de funciones, incluyendo un formulario para crear/editar
+ * y la lista de funciones con opciones de edición y eliminación.
  * @param {HTMLElement} container - El elemento del DOM donde se renderizará la vista.
  */
 export async function renderFuncionesPage(container) {
-    container.innerHTML = '<p>Cargando funciones...</p>';
+    let editingFuncionId = null; // Para controlar si estamos editando o creando
+    let currentFilters = {}; // Para mantener el estado de los filtros
 
-    const funciones = await getFunciones();
-    console.log('Funciones recibidas:', funciones);
-
-    if (funciones.length === 0) {
-        container.innerHTML = '<p>No hay funciones para mostrar.</p>';
-        return;
-    }
-
-    const funcionesHtml = funciones.map(funcion => {
-        return `
-            <div class="card">
-                <h2>Función #${funcion.funcion_id}</h2>
-                <p><strong>Película ID:</strong> ${funcion.pelicula_id}</p>
-                <p><strong>Sala ID:</strong> ${funcion.sala_id}</p>
-                <p><strong>Horario:</strong> ${new Date(funcion.horario).toLocaleString()}</p>
-            </div>
+    const fetchAndRenderFunciones = async () => {
+        container.innerHTML = `
+            <div class="loading-indicator">Cargando funciones...</div>
         `;
-    }).join('');
+        const [funciones, peliculas, salas] = await Promise.all([
+            getFunciones(currentFilters), // Pasar filtros actuales
+            getPeliculas(),
+            getSalas()
+        ]);
+        console.log('Funciones recibidas:', funciones);
+        console.log('Películas recibidas:', peliculas);
+        console.log('Salas recibidas:', salas);
 
-    container.innerHTML = `
-        <h1>Funciones Disponibles</h1>
-        <div id="funciones-container" class="grid-container">
-            ${funcionesHtml}
-        </div>
-    `;
+        container.innerHTML = `
+            <h1>Gestión de Funciones</h1>
+
+            <div class="form-container">
+                <h2>${editingFuncionId ? 'Editar Función' : 'Crear Nueva Función'}</h2>
+                <form id="funcion-form">
+                    <input type="hidden" id="funcion-id" value="">
+                    <div class="form-group">
+                        <label for="pelicula-id">Película:</label>
+                        <select id="pelicula-id" required>
+                            <option value="">Seleccione una película</option>
+                            ${peliculas.map(pelicula => `<option value="${pelicula.pelicula_id}">${pelicula.titulo}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="sala-id">Sala:</label>
+                        <select id="sala-id" required>
+                            <option value="">Seleccione una sala</option>
+                            ${salas.map(sala => `<option value="${sala.sala_id}">${sala.nombre_sala} (Capacidad: ${sala.capacidad})</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="horario">Horario:</label>
+                        <input type="datetime-local" id="horario" required>
+                    </div>
+                    <button type="submit" class="btn-primary">${editingFuncionId ? 'Actualizar Función' : 'Crear Función'}</button>
+                    ${editingFuncionId ? '<button type="button" id="cancel-edit" class="btn-secondary">Cancelar Edición</button>' : ''}
+                </form>
+            </div>
+
+            <div class="filter-container form-container">
+                <h2>Filtrar Funciones</h2>
+                <div class="form-group">
+                    <label for="filter-pelicula-id">Filtrar por Película:</label>
+                    <select id="filter-pelicula-id">
+                        <option value="">Todas las Películas</option>
+                        ${peliculas.map(pelicula => `<option value="${pelicula.pelicula_id}" ${currentFilters.pelicula_id == pelicula.pelicula_id ? 'selected' : ''}>${pelicula.titulo}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filter-sala-id">Filtrar por Sala:</label>
+                    <select id="filter-sala-id">
+                        <option value="">Todas las Salas</option>
+                        ${salas.map(sala => `<option value="${sala.sala_id}" ${currentFilters.sala_id == sala.sala_id ? 'selected' : ''}>${sala.nombre_sala}</option>`).join('')}
+                    </select>
+                </div>
+                <button type="button" id="apply-filters" class="btn-primary">Aplicar Filtros</button>
+                <button type="button" id="clear-filters" class="btn-secondary">Limpiar Filtros</button>
+            </div>
+
+            <div id="funciones-list-container">
+                <h2>Funciones Existentes</h2>
+                <div id="funciones-container" class="grid-container">
+                    ${funciones.length === 0 ? '<p>No hay funciones para mostrar.</p>' : ''}
+                </div>
+            </div>
+            <div id="message-container" class="message-container"></div>
+        `;
+
+        const funcionesContainer = container.querySelector('#funciones-container');
+        const funcionForm = container.querySelector('#funcion-form');
+        const funcionIdInput = container.querySelector('#funcion-id');
+        const peliculaIdSelect = container.querySelector('#pelicula-id');
+        const salaIdSelect = container.querySelector('#sala-id');
+        const horarioInput = container.querySelector('#horario');
+        const messageContainer = container.querySelector('#message-container');
+        const cancelEditButton = container.querySelector('#cancel-edit');
+
+        const filterPeliculaIdSelect = container.querySelector('#filter-pelicula-id');
+        const filterSalaIdSelect = container.querySelector('#filter-sala-id');
+        const applyFiltersButton = container.querySelector('#apply-filters');
+        const clearFiltersButton = container.querySelector('#clear-filters');
+
+        const showMessage = (message, type = 'success') => {
+            messageContainer.textContent = message;
+            messageContainer.className = `message-container ${type}`;
+            setTimeout(() => {
+                messageContainer.textContent = '';
+                messageContainer.className = 'message-container';
+            }, 3000);
+        };
+
+        funciones.forEach(funcion => {
+            const pelicula = peliculas.find(p => p.pelicula_id === funcion.pelicula_id);
+            const sala = salas.find(s => s.sala_id === funcion.sala_id);
+            const formattedHorario = new Date(funcion.horario).toLocaleString();
+
+            const funcionCard = document.createElement('div');
+            funcionCard.className = 'card';
+            funcionCard.innerHTML = `
+                <h3>Función #${funcion.funcion_id}</h3>
+                <p><strong>Película:</strong> ${pelicula ? pelicula.titulo : 'Desconocida'}</p>
+                <p><strong>Sala:</strong> ${sala ? sala.nombre_sala : 'Desconocida'}</p>
+                <p><strong>Horario:</strong> ${formattedHorario}</p>
+                <div class="card-actions">
+                    <button class="btn-edit" data-id="${funcion.funcion_id}" 
+                            data-pelicula-id="${funcion.pelicula_id}" 
+                            data-sala-id="${funcion.sala_id}" 
+                            data-horario="${formatDatetimeLocal(new Date(funcion.horario))}">Editar</button>
+                    <button class="btn-delete" data-id="${funcion.funcion_id}">Eliminar</button>
+                </div>
+            `;
+            funcionesContainer.appendChild(funcionCard);
+        });
+
+        funcionForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const pelicula_id = parseInt(peliculaIdSelect.value);
+            const sala_id = parseInt(salaIdSelect.value);
+            const horario = horarioInput.value; // ISO 8601 string from datetime-local
+
+            if (!pelicula_id || !sala_id || !horario) {
+                showMessage('Por favor, complete todos los campos correctamente.', 'error');
+                return;
+            }
+
+            const funcionData = { pelicula_id, sala_id, horario };
+
+            if (editingFuncionId) {
+                // Actualizar función
+                const updatedFuncion = await updateFuncion(editingFuncionId, funcionData);
+                if (updatedFuncion) {
+                    showMessage('Función actualizada exitosamente.', 'success');
+                    editingFuncionId = null; // Resetear modo edición
+                    funcionForm.reset();
+                    funcionIdInput.value = '';
+                    fetchAndRenderFunciones(); // Volver a renderizar la lista
+                } else {
+                    showMessage('Error al actualizar la función.', 'error');
+                }
+            } else {
+                // Crear función
+                const newFuncion = await createFuncion(funcionData);
+                if (newFuncion) {
+                    showMessage('Función creada exitosamente.', 'success');
+                    funcionForm.reset();
+                    fetchAndRenderFunciones(); // Volver a renderizar la lista
+                } else {
+                    showMessage('Error al crear la función.', 'error');
+                }
+            }
+        });
+
+        funcionesContainer.addEventListener('click', async (event) => {
+            if (event.target.classList.contains('btn-edit')) {
+                editingFuncionId = parseInt(event.target.dataset.id);
+                peliculaIdSelect.value = event.target.dataset.peliculaId;
+                salaIdSelect.value = event.target.dataset.salaId;
+                horarioInput.value = event.target.dataset.horario; // Already formatted for datetime-local
+                funcionIdInput.value = editingFuncionId;
+                // Scroll to form
+                container.querySelector('.form-container').scrollIntoView({ behavior: 'smooth' });
+                // No re-render here, just update form. Re-rendering would clear the form.
+                // fetchAndRenderFunciones(); 
+            } else if (event.target.classList.contains('btn-delete')) {
+                const funcionIdToDelete = parseInt(event.target.dataset.id);
+                if (confirm(`¿Está seguro de que desea eliminar la función con ID ${funcionIdToDelete}?`)) {
+                    const success = await deleteFuncion(funcionIdToDelete);
+                    if (success) {
+                        showMessage('Función eliminada exitosamente.', 'success');
+                        fetchAndRenderFunciones(); // Volver a renderizar la lista
+                    } else {
+                        showMessage('Error al eliminar la función.', 'error');
+                    }
+                }
+            }
+        });
+
+        if (cancelEditButton) {
+            cancelEditButton.addEventListener('click', () => {
+                editingFuncionId = null;
+                funcionForm.reset();
+                funcionIdInput.value = '';
+                // No re-render here, just clear form. Re-rendering would clear the form.
+                // fetchAndRenderFunciones(); 
+            });
+        }
+
+        applyFiltersButton.addEventListener('click', () => {
+            currentFilters = {};
+            if (filterPeliculaIdSelect.value) {
+                currentFilters.pelicula_id = filterPeliculaIdSelect.value;
+            }
+            if (filterSalaIdSelect.value) {
+                currentFilters.sala_id = filterSalaIdSelect.value;
+            }
+            fetchAndRenderFunciones();
+        });
+
+        clearFiltersButton.addEventListener('click', () => {
+            currentFilters = {};
+            filterPeliculaIdSelect.value = '';
+            filterSalaIdSelect.value = '';
+            fetchAndRenderFunciones();
+        });
+    };
+
+    fetchAndRenderFunciones(); // Llamada inicial para renderizar
 }

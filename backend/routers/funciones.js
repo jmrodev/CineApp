@@ -2,10 +2,29 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 
-// GET all funciones
+// GET all funciones with optional filters
 router.get('/', async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM Funcion');
+    const { pelicula_id, sala_id } = req.query;
+    let query = 'SELECT * FROM Funcion';
+    const params = [];
+
+    if (pelicula_id || sala_id) {
+      query += ' WHERE';
+      if (pelicula_id) {
+        query += ' pelicula_id = ?';
+        params.push(pelicula_id);
+      }
+      if (sala_id) {
+        if (pelicula_id) {
+          query += ' AND';
+        }
+        query += ' sala_id = ?';
+        params.push(sala_id);
+      }
+    }
+
+    const [rows] = await pool.query(query, params);
     res.json(rows);
   } catch (error) {
     res.status(500).json({ error: error.message });

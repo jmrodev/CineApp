@@ -410,3 +410,173 @@ footer {
     margin-bottom: 1rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
+
+/* --- General Form Styles --- */
+.form-container {
+    background-color: var(--card-bg);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    margin-bottom: 3rem;
+}
+
+.form-container h2 {
+    color: var(--text-color);
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"] {
+    width: calc(100% - 20px); /* Account for padding */
+    padding: 0.8rem 10px;
+    border: 1px solid var(--dark-bg);
+    border-radius: 5px;
+    background-color: var(--dark-bg);
+    color: var(--text-color);
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="number"]:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.3); /* Primary color with transparency */
+    outline: none;
+}
+
+/* --- Buttons --- */
+.btn-primary, .btn-secondary, .btn-edit, .btn-delete {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    margin-top: 1rem; /* Default margin for form buttons */
+    display: inline-block; /* Allow side-by-side buttons */
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #155cb8; /* Darker shade of primary */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-secondary {
+    background-color: var(--text-muted);
+    color: var(--dark-bg);
+    margin-left: 1rem;
+}
+
+.btn-secondary:hover {
+    background-color: #9e9e9e; /* Darker shade of text-muted */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.card-actions {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 0.8rem;
+    justify-content: flex-end; /* Align buttons to the right */
+}
+
+.btn-edit {
+    background-color: #ffc107; /* Yellow for edit */
+    color: var(--dark-bg);
+    padding: 0.6rem 1rem; /* Smaller padding for card buttons */
+    font-size: 0.9rem;
+    margin-top: 0; /* Override default margin */
+}
+
+.btn-edit:hover {
+    background-color: #e0a800;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-delete {
+    background-color: #dc3545; /* Red for delete */
+    color: white;
+    padding: 0.6rem 1rem; /* Smaller padding for card buttons */
+    font-size: 0.9rem;
+    margin-top: 0; /* Override default margin */
+}
+
+.btn-delete:hover {
+    background-color: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* --- Message Container --- */
+.message-container {
+    text-align: center;
+    padding: 1rem;
+    margin-top: 1.5rem;
+    border-radius: 5px;
+    font-weight: 600;
+    opacity: 0; /* Start hidden */
+    transition: opacity 0.5s ease, background-color 0.5s ease;
+}
+
+.message-container.success {
+    background-color: #28a745; /* Green */
+    color: white;
+    opacity: 1;
+}
+
+.message-container.error {
+    background-color: #dc3545; /* Red */
+    color: white;
+    opacity: 1;
+}
+
+/* --- Loading Indicator --- */
+.loading-indicator {
+    text-align: center;
+    padding: 2rem;
+    font-size: 1.2rem;
+    color: var(--text-muted);
+}
+
+/* Responsive adjustments for forms and buttons */
+@media (max-width: 480px) {
+    .form-container {
+        padding: 1.5rem;
+    }
+
+    .form-container h2 {
+        font-size: 1.5rem;
+    }
+
+    .btn-primary, .btn-secondary, .btn-edit, .btn-delete {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 0.5rem;
+    }
+
+    .card-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}

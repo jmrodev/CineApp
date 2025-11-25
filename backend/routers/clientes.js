@@ -27,13 +27,13 @@ router.get('/:id', async (req, res) => {
 
 // CREATE a new cliente
 router.post('/', async (req, res) => {
-  const { nombre_cliente, email } = req.body;
+  const { nombre_cliente, apellido, email, telefono } = req.body;
   if (!nombre_cliente || !email) {
     return res.status(400).json({ message: 'nombre_cliente and email are required' });
   }
   try {
-    const [result] = await pool.query('INSERT INTO Cliente (nombre_cliente, email) VALUES (?, ?)', [nombre_cliente, email]);
-    res.status(201).json({ cliente_id: result.insertId, nombre_cliente, email });
+    const [result] = await pool.query('INSERT INTO Cliente (nombre_cliente, apellido, email, telefono) VALUES (?, ?, ?, ?)', [nombre_cliente, apellido, email, telefono]);
+    res.status(201).json({ cliente_id: result.insertId, nombre_cliente, apellido, email, telefono });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -41,16 +41,16 @@ router.post('/', async (req, res) => {
 
 // UPDATE a cliente
 router.put('/:id', async (req, res) => {
-  const { nombre_cliente, email } = req.body;
+  const { nombre_cliente, apellido, email, telefono } = req.body;
   if (!nombre_cliente || !email) {
     return res.status(400).json({ message: 'nombre_cliente and email are required' });
   }
   try {
-    const [result] = await pool.query('UPDATE Cliente SET nombre_cliente = ?, email = ? WHERE cliente_id = ?', [nombre_cliente, email, req.params.id]);
+    const [result] = await pool.query('UPDATE Cliente SET nombre_cliente = ?, apellido = ?, email = ?, telefono = ? WHERE cliente_id = ?', [nombre_cliente, apellido, email, telefono, req.params.id]);
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'Cliente not found' });
     }
-    res.json({ cliente_id: req.params.id, nombre_cliente, email });
+    res.json({ cliente_id: req.params.id, nombre_cliente, apellido, email, telefono });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

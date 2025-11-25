@@ -1,8 +1,10 @@
 const API_BASE_URL = 'http://localhost:3000/api';
 
-export async function getReservas() {
+export async function getReservas(filters = {}) {
     try {
-        const response = await fetch(`${API_BASE_URL}/reservas`);
+        const queryString = new URLSearchParams(filters).toString();
+        const url = `${API_BASE_URL}/reservas${queryString ? `?${queryString}` : ''}`;
+        const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`Error en la red: ${response.statusText}`);
         }
