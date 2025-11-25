@@ -104,12 +104,22 @@ export async function renderSalasPage(container) {
         salas.forEach(sala => {
             const salaCard = document.createElement('div');
             salaCard.className = 'card';
+            let funcionesHtml = '';
+            if (sala.funciones && sala.funciones.length > 0) {
+                funcionesHtml = '<h4>Funciones:</h4><ul>';
+                sala.funciones.forEach(funcion => {
+                    funcionesHtml += `<li>${funcion.pelicula_titulo} - ${new Date(funcion.horario).toLocaleString()}</li>`;
+                });
+                funcionesHtml += '</ul>';
+            } else {
+                funcionesHtml = '<p>No hay funciones programadas.</p>';
+            }
+
             salaCard.innerHTML = `
                 <h3>${sala.nombre_sala}</h3>
                 <p><strong>ID:</strong> ${sala.sala_id}</p>
                 <p><strong>Capacidad:</strong> ${sala.capacidad}</p>
-                ${sala.pelicula_actual_titulo ? `<p><strong>Película Actual:</strong> ${sala.pelicula_actual_titulo}</p>` : ''}
-                ${sala.funcion_actual_horario ? `<p><strong>Próxima Función:</strong> ${new Date(sala.funcion_actual_horario).toLocaleString()}</p>` : ''}
+                ${funcionesHtml}
                 <div class="card-actions">
                     <button class="btn-edit" data-id="${sala.sala_id}" data-nombre="${sala.nombre_sala}" data-capacidad="${sala.capacidad}">Editar</button>
                     <button class="btn-delete" data-id="${sala.sala_id}">Eliminar</button>
