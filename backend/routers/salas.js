@@ -5,9 +5,34 @@ const pool = require('../db');
 // GET all salas
 router.get('/', async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM Sala');
+    const query = `
+      SELECT
+          S.*,
+          P.titulo AS pelicula_actual_titulo,
+          P.pelicula_id AS pelicula_actual_id,
+          F.funcion_id AS funcion_actual_id,
+          F.horario AS funcion_actual_horario
+      FROM
+          Sala S
+      LEFT JOIN
+          (SELECT
+              funcion_id,
+              pelicula_id,
+              sala_id,
+              horario,
+              ROW_NUMBER() OVER (PARTITION BY sala_id ORDER BY horario ASC) as rn
+          FROM
+              Funcion
+          WHERE
+              horario > NOW()
+          ) AS F ON S.sala_id = F.sala_id AND F.rn = 1
+      LEFT JOIN
+          Pelicula P ON F.pelicula_id = P.pelicula_id;
+    `;
+    const [rows] = await pool.query(query);
     res.json(rows);
   } catch (error) {
+    console.error('Error al obtener las salas con película actual:', error);
     res.status(500).json({ error: error.message });
   }
 });

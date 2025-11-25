@@ -1,4 +1,5 @@
 import { getClientes, createCliente, updateCliente, deleteCliente } from '../services/clientes.js';
+import { showConfirmModal } from '../main.js';
 
 /**
  * Renderiza la página de gestión de clientes, incluyendo un formulario para crear/editar
@@ -18,29 +19,36 @@ export async function renderClientesPage(container) {
         container.innerHTML = `
             <h1>Gestión de Clientes</h1>
 
-            <div class="form-container">
-                <h2>${editingClienteId ? 'Editar Cliente' : 'Crear Nuevo Cliente'}</h2>
-                <form id="cliente-form">
-                    <input type="hidden" id="cliente-id" value="">
-                    <div class="form-group">
-                        <label for="nombre-cliente">Nombre:</label>
-                        <input type="text" id="nombre-cliente" required>
+            <button id="add-cliente-btn" class="btn-primary">Añadir Nuevo Cliente</button>
+
+            <div class="modal-overlay" id="cliente-form-modal">
+                <div class="modal-content">
+                    <span class="close-button">&times;</span>
+                    <div class="form-section">
+                        <h2 id="modal-title">${editingClienteId ? 'Editar Cliente' : 'Crear Nuevo Cliente'}</h2>
+                        <form id="cliente-form">
+                            <input type="hidden" id="cliente-id" value="">
+                            <div class="form-group">
+                                <label for="nombre-cliente">Nombre:</label>
+                                <input type="text" id="nombre-cliente" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="apellido-cliente">Apellido:</label>
+                                <input type="text" id="apellido-cliente">
+                            </div>
+                            <div class="form-group">
+                                <label for="email-cliente">Email:</label>
+                                <input type="email" id="email-cliente" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="telefono-cliente">Teléfono:</label>
+                                <input type="text" id="telefono-cliente">
+                            </div>
+                            <button type="submit" class="btn-primary" id="submit-cliente-form">${editingClienteId ? 'Actualizar Cliente' : 'Crear Cliente'}</button>
+                            <button type="button" id="cancel-edit" class="btn-secondary">Cancelar</button>
+                        </form>
                     </div>
-                    <div class="form-group">
-                        <label for="apellido-cliente">Apellido:</label>
-                        <input type="text" id="apellido-cliente">
-                    </div>
-                    <div class="form-group">
-                        <label for="email-cliente">Email:</label>
-                        <input type="email" id="email-cliente" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="telefono-cliente">Teléfono:</label>
-                        <input type="text" id="telefono-cliente">
-                    </div>
-                    <button type="submit" class="btn-primary">${editingClienteId ? 'Actualizar Cliente' : 'Crear Cliente'}</button>
-                    ${editingClienteId ? '<button type="button" id="cancel-edit" class="btn-secondary">Cancelar Edición</button>' : ''}
-                </form>
+                </div>
             </div>
 
             <div id="clientes-list-container">
@@ -52,15 +60,21 @@ export async function renderClientesPage(container) {
             <div id="message-container" class="message-container"></div>
         `;
 
-        const clientesContainer = container.querySelector('#clientes-container');
+        const clienteFormModal = container.querySelector('#cliente-form-modal');
+        const addClienteBtn = container.querySelector('#add-cliente-btn');
+        const closeButton = container.querySelector('.close-button');
         const clienteForm = container.querySelector('#cliente-form');
+        const clientesContainer = container.querySelector('#clientes-container');
+        const cancelEditButton = container.querySelector('#cancel-edit');
+        const modalTitle = container.querySelector('#modal-title');
+        const submitClienteFormBtn = container.querySelector('#submit-cliente-form');
+        const messageContainer = container.querySelector('#message-container');
+
         const clienteIdInput = container.querySelector('#cliente-id');
         const nombreClienteInput = container.querySelector('#nombre-cliente');
         const apellidoClienteInput = container.querySelector('#apellido-cliente');
         const emailClienteInput = container.querySelector('#email-cliente');
         const telefonoClienteInput = container.querySelector('#telefono-cliente');
-        const messageContainer = container.querySelector('#message-container');
-        const cancelEditButton = container.querySelector('#cancel-edit');
 
         const showMessage = (message, type = 'success') => {
             messageContainer.textContent = message;
@@ -70,6 +84,35 @@ export async function renderClientesPage(container) {
                 messageContainer.className = 'message-container';
             }, 3000);
         };
+
+        const openModal = () => {
+            clienteFormModal.style.display = 'flex';
+        };
+
+        const closeModal = () => {
+            clienteFormModal.style.display = 'none';
+            clienteForm.reset();
+            editingClienteId = null;
+            clienteIdInput.value = '';
+            modalTitle.textContent = 'Crear Nuevo Cliente';
+            submitClienteFormBtn.textContent = 'Crear Cliente';
+        };
+
+        // Initial load of clients
+        // await fetchAndRenderClientes(); // This is already called at the end of the outer function
+
+        // Event listeners for modal
+        addClienteBtn.addEventListener('click', () => {
+            closeModal(); // Ensure form is reset
+            openModal();
+        });
+        closeButton.addEventListener('click', closeModal);
+        cancelEditButton.addEventListener('click', closeModal);
+        window.addEventListener('click', (event) => {
+            if (event.target === clienteFormModal) {
+                closeModal();
+            }
+        });
 
         clientes.forEach(cliente => {
             const clienteCard = document.createElement('div');
@@ -110,10 +153,6 @@ export async function renderClientesPage(container) {
                 const updatedCliente = await updateCliente(editingClienteId, clienteData);
                 if (updatedCliente) {
                     showMessage('Cliente actualizado exitosamente.', 'success');
-                    editingClienteId = null; // Resetear modo edición
-                    clienteForm.reset();
-                    clienteIdInput.value = '';
-                    fetchAndRenderClientes(); // Volver a renderizar la lista
                 } else {
                     showMessage('Error al actualizar el cliente.', 'error');
                 }
@@ -122,12 +161,13 @@ export async function renderClientesPage(container) {
                 const newCliente = await createCliente(clienteData);
                 if (newCliente) {
                     showMessage('Cliente creado exitosamente.', 'success');
-                    clienteForm.reset();
-                    fetchAndRenderClientes(); // Volver a renderizar la lista
                 } else {
                     showMessage('Error al crear el cliente.', 'error');
                 }
             }
+
+            closeModal();
+            await fetchAndRenderClientes(); // Volver a renderizar la lista
         });
 
         clientesContainer.addEventListener('click', async (event) => {
@@ -138,31 +178,23 @@ export async function renderClientesPage(container) {
                 emailClienteInput.value = event.target.dataset.email;
                 telefonoClienteInput.value = event.target.dataset.telefono;
                 clienteIdInput.value = editingClienteId;
-                // Scroll to form
-                container.querySelector('.form-container').scrollIntoView({ behavior: 'smooth' });
-                fetchAndRenderClientes(); // Re-render to show "Cancelar Edición" button and update form title
+                
+                modalTitle.textContent = 'Editar Cliente';
+                submitClienteFormBtn.textContent = 'Actualizar Cliente';
+                openModal();
             } else if (event.target.classList.contains('btn-delete')) {
                 const clienteIdToDelete = parseInt(event.target.dataset.id);
-                if (confirm(`¿Está seguro de que desea eliminar el cliente con ID ${clienteIdToDelete}?`)) {
+                showConfirmModal(`¿Está seguro de que desea eliminar el cliente con ID ${clienteIdToDelete}?`, async () => {
                     const success = await deleteCliente(clienteIdToDelete);
                     if (success) {
                         showMessage('Cliente eliminado exitosamente.', 'success');
-                        fetchAndRenderClientes(); // Volver a renderizar la lista
+                        await fetchAndRenderClientes(); // Volver a renderizar la lista
                     } else {
                         showMessage('Error al eliminar el cliente.', 'error');
                     }
-                }
+                });
             }
         });
-
-        if (cancelEditButton) {
-            cancelEditButton.addEventListener('click', () => {
-                editingClienteId = null;
-                clienteForm.reset();
-                clienteIdInput.value = '';
-                fetchAndRenderClientes(); // Re-render to remove "Cancelar Edición" button and reset form title
-            });
-        }
     };
 
     fetchAndRenderClientes(); // Llamada inicial para renderizar

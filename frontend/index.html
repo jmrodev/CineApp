@@ -30,5 +30,18 @@
     </footer>
 
     <script type="module" src="js/main.js"></script>
+
+    <!-- Global Confirmation Modal -->
+    <div class="modal-overlay" id="confirmation-modal">
+        <div class="modal-content">
+            <span class="close-button" id="confirm-close-button">&times;</span>
+            <h2 id="confirmation-modal-title">Confirmar Acción</h2>
+            <p id="confirmation-modal-message">¿Estás seguro de que quieres realizar esta acción?</p>
+            <div class="modal-actions">
+                <button class="btn-delete" id="confirm-ok-button">Confirmar</button>
+                <button class="btn-secondary" id="confirm-cancel-button">Cancelar</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

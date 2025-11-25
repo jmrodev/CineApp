@@ -439,7 +439,10 @@ footer {
 }
 
 .form-group input[type="text"],
-.form-group input[type="number"] {
+.form-group input[type="number"],
+.form-group input[type="email"],
+.form-group input[type="datetime-local"],
+.form-group select {
     width: calc(100% - 20px); /* Account for padding */
     padding: 0.8rem 10px;
     border: 1px solid var(--dark-bg);
@@ -451,7 +454,10 @@ footer {
 }
 
 .form-group input[type="text"]:focus,
-.form-group input[type="number"]:focus {
+.form-group input[type="number"]:focus,
+.form-group input[type="email"]:focus,
+.form-group input[type="datetime-local"]:focus,
+.form-group select:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.3); /* Primary color with transparency */
     outline: none;
@@ -578,5 +584,133 @@ footer {
     .card-actions {
         flex-direction: column;
         gap: 0.5rem;
+    }
+}
+
+/* --- Modal Styles --- */
+.modal-overlay {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1001; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.7); /* Black w/ opacity */
+    align-items: center; /* Center content vertically */
+    justify-content: center; /* Center content horizontally */
+}
+
+.modal-content {
+    background-color: var(--light-bg);
+    margin: auto;
+    padding: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    width: 80%; /* Could be responsive */
+    max-width: 600px;
+    position: relative;
+}
+
+.close-button {
+    color: var(--text-muted);
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: var(--accent-color);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Adjust form-section inside modal */
+.modal-content .form-section {
+    background-color: transparent; /* Remove background from form-section inside modal */
+    box-shadow: none; /* Remove shadow from form-section inside modal */
+    margin-bottom: 0;
+    padding: 0;
+}
+
+.modal-content .form-section h2 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+/* Responsive adjustments for modal */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 90%;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-content {
+        width: 95%;
+        padding: 15px;
+    }
+    .close-button {
+        font-size: 24px;
+        right: 15px;
+    }
+}
+
+/* --- Filter Section Styles --- */
+.filter-container {
+    background-color: var(--dark-bg); /* Slightly darker than light-bg, but lighter than card-bg */
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Softer shadow */
+    margin-bottom: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end; /* Align items to the bottom */
+}
+
+.filter-container h2 {
+    width: 100%; /* Take full width */
+    text-align: left;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+    font-size: 1.5rem;
+    border-bottom: 1px solid var(--card-bg); /* Subtle separator */
+    padding-bottom: 0.5rem;
+}
+
+.filter-container .form-group {
+    flex: 1; /* Allow form groups to grow */
+    min-width: 200px; /* Minimum width for filter dropdowns */
+    margin-bottom: 0; /* Remove bottom margin from form-group inside filter */
+}
+
+.filter-container .btn-primary,
+.filter-container .btn-secondary {
+    margin-top: 0; /* Remove top margin from buttons inside filter */
+    flex-shrink: 0; /* Prevent buttons from shrinking */
+}
+
+@media (max-width: 768px) {
+    .filter-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .filter-container .form-group {
+        min-width: unset;
+        width: 100%;
+    }
+    .filter-container .btn-primary,
+    .filter-container .btn-secondary {
+        width: 100%;
+        margin-left: 0;
     }
 }

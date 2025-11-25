@@ -1,6 +1,8 @@
 import { getReservas, createReserva, updateReserva, deleteReserva } from '../services/reservas.js';
 import { getClientes } from '../services/clientes.js';
 import { getFunciones } from '../services/funciones.js';
+import { getPeliculas } from '../services/peliculas.js'; // Import getPeliculas
+import { showConfirmModal } from '../main.js';
 
 /**
  * Renderiza la página de gestión de reservas, incluyendo un formulario para crear/editar
@@ -15,46 +17,59 @@ export async function renderReservasPage(container) {
         container.innerHTML = `
             <div class="loading-indicator">Cargando reservas...</div>
         `;
-        const [reservas, clientes, funciones] = await Promise.all([
+        const [reservas, clientes, funciones, peliculas] = await Promise.all([ // Fetch peliculas
             getReservas(currentFilters), // Pasar filtros actuales
             getClientes(),
-            getFunciones()
+            getFunciones(),
+            getPeliculas() // Fetch peliculas
         ]);
         console.log('Reservas recibidas:', reservas);
         console.log('Clientes recibidos:', clientes);
         console.log('Funciones recibidas:', funciones);
+        console.log('Películas recibidas:', peliculas);
 
         container.innerHTML = `
             <h1>Gestión de Reservas</h1>
 
-            <div class="form-container">
-                <h2>${editingReservaId ? 'Editar Reserva' : 'Crear Nueva Reserva'}</h2>
-                <form id="reserva-form">
-                    <input type="hidden" id="reserva-id" value="">
-                    <div class="form-group">
-                        <label for="cliente-id">Cliente:</label>
-                        <select id="cliente-id" required>
-                            <option value="">Seleccione un cliente</option>
-                            ${clientes.map(cliente => `<option value="${cliente.cliente_id}">${cliente.nombre_cliente} ${cliente.apellido || ''}</option>`).join('')}
-                        </select>
+            <button id="add-reserva-btn" class="btn-primary">Añadir Nueva Reserva</button>
+
+            <div class="modal-overlay" id="reserva-form-modal">
+                <div class="modal-content">
+                    <span class="close-button">&times;</span>
+                    <div class="form-section">
+                        <h2 id="modal-title">${editingReservaId ? 'Editar Reserva' : 'Crear Nueva Reserva'}</h2>
+                        <form id="reserva-form">
+                            <input type="hidden" id="reserva-id" value="">
+                            <div class="form-group">
+                                <label for="cliente-id">Cliente:</label>
+                                <select id="cliente-id" required>
+                                    <option value="">Seleccione un cliente</option>
+                                    ${clientes.map(cliente => `<option value="${cliente.cliente_id}">${cliente.nombre_cliente} ${cliente.apellido || ''}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="funcion-id">Función:</label>
+                                <select id="funcion-id" required>
+                                    <option value="">Seleccione una función</option>
+                                    ${funciones.map(funcion => {
+                                        const pelicula = peliculas.find(p => p.pelicula_id === funcion.pelicula_id);
+                                        const peliculaTitulo = pelicula ? pelicula.titulo : 'Desconocida';
+                                        return `<option value="${funcion.funcion_id}">${peliculaTitulo} - ${new Date(funcion.horario).toLocaleString()}</option>`;
+                                    }).join('')}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="numero-asientos">Número de Asientos:</label>
+                                <input type="number" id="numero-asientos" required min="1">
+                            </div>
+                            <button type="submit" class="btn-primary" id="submit-reserva-form">${editingReservaId ? 'Actualizar Reserva' : 'Crear Reserva'}</button>
+                            <button type="button" id="cancel-edit" class="btn-secondary">Cancelar</button>
+                        </form>
                     </div>
-                    <div class="form-group">
-                        <label for="funcion-id">Función:</label>
-                        <select id="funcion-id" required>
-                            <option value="">Seleccione una función</option>
-                            ${funciones.map(funcion => `<option value="${funcion.funcion_id}">Función #${funcion.funcion_id} (Película: ${funcion.pelicula_id}, Sala: ${funcion.sala_id}, Horario: ${new Date(funcion.horario).toLocaleString()})</option>`).join('')}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="numero-asientos">Número de Asientos:</label>
-                        <input type="number" id="numero-asientos" required min="1">
-                    </div>
-                    <button type="submit" class="btn-primary">${editingReservaId ? 'Actualizar Reserva' : 'Crear Reserva'}</button>
-                    ${editingReservaId ? '<button type="button" id="cancel-edit" class="btn-secondary">Cancelar Edición</button>' : ''}
-                </form>
+                </div>
             </div>
 
-            <div class="filter-container form-container">
+            <div class="filter-container">
                 <h2>Filtrar Reservas</h2>
                 <div class="form-group">
                     <label for="filter-cliente-id">Filtrar por Cliente:</label>
@@ -67,7 +82,11 @@ export async function renderReservasPage(container) {
                     <label for="filter-funcion-id">Filtrar por Función:</label>
                     <select id="filter-funcion-id">
                         <option value="">Todas las Funciones</option>
-                        ${funciones.map(funcion => `<option value="${funcion.funcion_id}" ${currentFilters.funcion_id == funcion.funcion_id ? 'selected' : ''}>Función #${funcion.funcion_id} (Horario: ${new Date(funcion.horario).toLocaleString()})</option>`).join('')}
+                        ${funciones.map(funcion => {
+                            const pelicula = peliculas.find(p => p.pelicula_id === funcion.pelicula_id);
+                            const peliculaTitulo = pelicula ? pelicula.titulo : 'Desconocida';
+                            return `<option value="${funcion.funcion_id}" ${currentFilters.funcion_id == funcion.funcion_id ? 'selected' : ''}>${peliculaTitulo} - ${new Date(funcion.horario).toLocaleString()}</option>`;
+                        }).join('')}
                     </select>
                 </div>
                 <button type="button" id="apply-filters" class="btn-primary">Aplicar Filtros</button>
@@ -83,14 +102,20 @@ export async function renderReservasPage(container) {
             <div id="message-container" class="message-container"></div>
         `;
 
-        const reservasContainer = container.querySelector('#reservas-container');
+        const reservaFormModal = container.querySelector('#reserva-form-modal');
+        const addReservaBtn = container.querySelector('#add-reserva-btn');
+        const closeButton = container.querySelector('.close-button');
         const reservaForm = container.querySelector('#reserva-form');
+        const reservasContainer = container.querySelector('#reservas-container');
+        const cancelEditButton = container.querySelector('#cancel-edit');
+        const modalTitle = container.querySelector('#modal-title');
+        const submitReservaFormBtn = container.querySelector('#submit-reserva-form');
+        const messageContainer = container.querySelector('#message-container');
+
         const reservaIdInput = container.querySelector('#reserva-id');
         const clienteIdSelect = container.querySelector('#cliente-id');
         const funcionIdSelect = container.querySelector('#funcion-id');
         const numeroAsientosInput = container.querySelector('#numero-asientos');
-        const messageContainer = container.querySelector('#message-container');
-        const cancelEditButton = container.querySelector('#cancel-edit');
 
         const filterClienteIdSelect = container.querySelector('#filter-cliente-id');
         const filterFuncionIdSelect = container.querySelector('#filter-funcion-id');
@@ -106,10 +131,37 @@ export async function renderReservasPage(container) {
             }, 3000);
         };
 
+        const openModal = () => {
+            reservaFormModal.style.display = 'flex';
+        };
+
+        const closeModal = () => {
+            reservaFormModal.style.display = 'none';
+            reservaForm.reset();
+            editingReservaId = null;
+            reservaIdInput.value = '';
+            modalTitle.textContent = 'Crear Nueva Reserva';
+            submitReservaFormBtn.textContent = 'Crear Reserva';
+        };
+
+        // Event listeners for modal
+        addReservaBtn.addEventListener('click', () => {
+            closeModal(); // Ensure form is reset
+            openModal();
+        });
+        closeButton.addEventListener('click', closeModal);
+        cancelEditButton.addEventListener('click', closeModal);
+        window.addEventListener('click', (event) => {
+            if (event.target === reservaFormModal) {
+                closeModal();
+            }
+        });
+
         reservas.forEach(reserva => {
             const cliente = clientes.find(c => c.cliente_id === reserva.cliente_id);
             const funcion = funciones.find(f => f.funcion_id === reserva.funcion_id);
-            const funcionDetails = funcion ? `Película: ${funcion.pelicula_id}, Sala: ${funcion.sala_id}, Horario: ${new Date(funcion.horario).toLocaleString()}` : 'Función Desconocida';
+            const pelicula = funcion ? peliculas.find(p => p.pelicula_id === funcion.pelicula_id) : null; // Find pelicula
+            const funcionDetails = funcion ? `${pelicula ? pelicula.titulo : 'Desconocida'} - ${new Date(funcion.horario).toLocaleString()}` : 'Función Desconocida';
 
             const reservaCard = document.createElement('div');
             reservaCard.className = 'card';
@@ -147,10 +199,6 @@ export async function renderReservasPage(container) {
                 const updatedReserva = await updateReserva(editingReservaId, reservaData);
                 if (updatedReserva) {
                     showMessage('Reserva actualizada exitosamente.', 'success');
-                    editingReservaId = null; // Resetear modo edición
-                    reservaForm.reset();
-                    reservaIdInput.value = '';
-                    fetchAndRenderReservas(); // Volver a renderizar la lista
                 } else {
                     showMessage('Error al actualizar la reserva.', 'error');
                 }
@@ -159,12 +207,13 @@ export async function renderReservasPage(container) {
                 const newReserva = await createReserva(reservaData);
                 if (newReserva) {
                     showMessage('Reserva creada exitosamente.', 'success');
-                    reservaForm.reset();
-                    fetchAndRenderReservas(); // Volver a renderizar la lista
                 } else {
                     showMessage('Error al crear la reserva.', 'error');
                 }
             }
+
+            closeModal();
+            await fetchAndRenderReservas(); // Volver a renderizar la lista
         });
 
         reservasContainer.addEventListener('click', async (event) => {
@@ -174,33 +223,23 @@ export async function renderReservasPage(container) {
                 funcionIdSelect.value = event.target.dataset.funcionId;
                 numeroAsientosInput.value = parseInt(event.target.dataset.numeroAsientos);
                 reservaIdInput.value = editingReservaId;
-                // Scroll to form
-                container.querySelector('.form-container').scrollIntoView({ behavior: 'smooth' });
-                // No re-render here, just update form. Re-rendering would clear the form.
-                // fetchAndRenderReservas(); 
+                
+                modalTitle.textContent = 'Editar Reserva';
+                submitReservaFormBtn.textContent = 'Actualizar Reserva';
+                openModal();
             } else if (event.target.classList.contains('btn-delete')) {
                 const reservaIdToDelete = parseInt(event.target.dataset.id);
-                if (confirm(`¿Está seguro de que desea eliminar la reserva con ID ${reservaIdToDelete}?`)) {
+                showConfirmModal(`¿Está seguro de que desea eliminar la reserva con ID ${reservaIdToDelete}?`, async () => {
                     const success = await deleteReserva(reservaIdToDelete);
                     if (success) {
                         showMessage('Reserva eliminada exitosamente.', 'success');
-                        fetchAndRenderReservas(); // Volver a renderizar la lista
+                        await fetchAndRenderReservas(); // Volver a renderizar la lista
                     } else {
                         showMessage('Error al eliminar la reserva.', 'error');
                     }
-                }
+                });
             }
         });
-
-        if (cancelEditButton) {
-            cancelEditButton.addEventListener('click', () => {
-                editingReservaId = null;
-                reservaForm.reset();
-                reservaIdInput.value = '';
-                // No re-render here, just clear form. Re-rendering would clear the form.
-                // fetchAndRenderReservas(); 
-            });
-        }
 
         applyFiltersButton.addEventListener('click', () => {
             currentFilters = {};

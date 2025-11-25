@@ -1,4 +1,5 @@
 import { getSalas, createSala, updateSala, deleteSala } from '../services/salas.js';
+import { showConfirmModal } from '../main.js';
 
 /**
  * Renderiza la página de gestión de salas, incluyendo un formulario para crear/editar
@@ -18,21 +19,28 @@ export async function renderSalasPage(container) {
         container.innerHTML = `
             <h1>Gestión de Salas</h1>
 
-            <div class="form-container">
-                <h2>${editingSalaId ? 'Editar Sala' : 'Crear Nueva Sala'}</h2>
-                <form id="sala-form">
-                    <input type="hidden" id="sala-id" value="">
-                    <div class="form-group">
-                        <label for="nombre-sala">Nombre de la Sala:</label>
-                        <input type="text" id="nombre-sala" required>
+            <button id="add-sala-btn" class="btn-primary">Añadir Nueva Sala</button>
+
+            <div class="modal-overlay" id="sala-form-modal">
+                <div class="modal-content">
+                    <span class="close-button">&times;</span>
+                    <div class="form-section">
+                        <h2 id="modal-title">${editingSalaId ? 'Editar Sala' : 'Crear Nueva Sala'}</h2>
+                        <form id="sala-form">
+                            <input type="hidden" id="sala-id" value="">
+                            <div class="form-group">
+                                <label for="nombre-sala">Nombre de la Sala:</label>
+                                <input type="text" id="nombre-sala" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="capacidad-sala">Capacidad:</label>
+                                <input type="number" id="capacidad-sala" required min="1">
+                            </div>
+                            <button type="submit" class="btn-primary" id="submit-sala-form">${editingSalaId ? 'Actualizar Sala' : 'Crear Sala'}</button>
+                            <button type="button" id="cancel-edit" class="btn-secondary">Cancelar</button>
+                        </form>
                     </div>
-                    <div class="form-group">
-                        <label for="capacidad-sala">Capacidad:</label>
-                        <input type="number" id="capacidad-sala" required min="1">
-                    </div>
-                    <button type="submit" class="btn-primary">${editingSalaId ? 'Actualizar Sala' : 'Crear Sala'}</button>
-                    ${editingSalaId ? '<button type="button" id="cancel-edit" class="btn-secondary">Cancelar Edición</button>' : ''}
-                </form>
+                </div>
             </div>
 
             <div id="salas-list-container">
@@ -44,13 +52,19 @@ export async function renderSalasPage(container) {
             <div id="message-container" class="message-container"></div>
         `;
 
-        const salasContainer = container.querySelector('#salas-container');
+        const salaFormModal = container.querySelector('#sala-form-modal');
+        const addSalaBtn = container.querySelector('#add-sala-btn');
+        const closeButton = container.querySelector('.close-button');
         const salaForm = container.querySelector('#sala-form');
+        const salasContainer = container.querySelector('#salas-container');
+        const cancelEditButton = container.querySelector('#cancel-edit');
+        const modalTitle = container.querySelector('#modal-title');
+        const submitSalaFormBtn = container.querySelector('#submit-sala-form');
+        const messageContainer = container.querySelector('#message-container');
+
         const salaIdInput = container.querySelector('#sala-id');
         const nombreSalaInput = container.querySelector('#nombre-sala');
         const capacidadSalaInput = container.querySelector('#capacidad-sala');
-        const messageContainer = container.querySelector('#message-container');
-        const cancelEditButton = container.querySelector('#cancel-edit');
 
         const showMessage = (message, type = 'success') => {
             messageContainer.textContent = message;
@@ -61,6 +75,32 @@ export async function renderSalasPage(container) {
             }, 3000);
         };
 
+        const openModal = () => {
+            salaFormModal.style.display = 'flex';
+        };
+
+        const closeModal = () => {
+            salaFormModal.style.display = 'none';
+            salaForm.reset();
+            editingSalaId = null;
+            salaIdInput.value = '';
+            modalTitle.textContent = 'Crear Nueva Sala';
+            submitSalaFormBtn.textContent = 'Crear Sala';
+        };
+
+        // Event listeners for modal
+        addSalaBtn.addEventListener('click', () => {
+            closeModal(); // Ensure form is reset
+            openModal();
+        });
+        closeButton.addEventListener('click', closeModal);
+        cancelEditButton.addEventListener('click', closeModal);
+        window.addEventListener('click', (event) => {
+            if (event.target === salaFormModal) {
+                closeModal();
+            }
+        });
+
         salas.forEach(sala => {
             const salaCard = document.createElement('div');
             salaCard.className = 'card';
@@ -68,6 +108,8 @@ export async function renderSalasPage(container) {
                 <h3>${sala.nombre_sala}</h3>
                 <p><strong>ID:</strong> ${sala.sala_id}</p>
                 <p><strong>Capacidad:</strong> ${sala.capacidad}</p>
+                ${sala.pelicula_actual_titulo ? `<p><strong>Película Actual:</strong> ${sala.pelicula_actual_titulo}</p>` : ''}
+                ${sala.funcion_actual_horario ? `<p><strong>Próxima Función:</strong> ${new Date(sala.funcion_actual_horario).toLocaleString()}</p>` : ''}
                 <div class="card-actions">
                     <button class="btn-edit" data-id="${sala.sala_id}" data-nombre="${sala.nombre_sala}" data-capacidad="${sala.capacidad}">Editar</button>
                     <button class="btn-delete" data-id="${sala.sala_id}">Eliminar</button>
@@ -93,10 +135,6 @@ export async function renderSalasPage(container) {
                 const updatedSala = await updateSala(editingSalaId, salaData);
                 if (updatedSala) {
                     showMessage('Sala actualizada exitosamente.', 'success');
-                    editingSalaId = null; // Resetear modo edición
-                    salaForm.reset();
-                    salaIdInput.value = '';
-                    fetchAndRenderSalas(); // Volver a renderizar la lista
                 } else {
                     showMessage('Error al actualizar la sala.', 'error');
                 }
@@ -105,12 +143,13 @@ export async function renderSalasPage(container) {
                 const newSala = await createSala(salaData);
                 if (newSala) {
                     showMessage('Sala creada exitosamente.', 'success');
-                    salaForm.reset();
-                    fetchAndRenderSalas(); // Volver a renderizar la lista
                 } else {
                     showMessage('Error al crear la sala.', 'error');
                 }
             }
+
+            closeModal();
+            await fetchAndRenderSalas(); // Volver a renderizar la lista
         });
 
         salasContainer.addEventListener('click', async (event) => {
@@ -119,31 +158,23 @@ export async function renderSalasPage(container) {
                 nombreSalaInput.value = event.target.dataset.nombre;
                 capacidadSalaInput.value = parseInt(event.target.dataset.capacidad);
                 salaIdInput.value = editingSalaId;
-                // Scroll to form
-                container.querySelector('.form-container').scrollIntoView({ behavior: 'smooth' });
-                fetchAndRenderSalas(); // Re-render to show "Cancelar Edición" button and update form title
+                
+                modalTitle.textContent = 'Editar Sala';
+                submitSalaFormBtn.textContent = 'Actualizar Sala';
+                openModal();
             } else if (event.target.classList.contains('btn-delete')) {
                 const salaIdToDelete = parseInt(event.target.dataset.id);
-                if (confirm(`¿Está seguro de que desea eliminar la sala con ID ${salaIdToDelete}?`)) {
+                showConfirmModal(`¿Está seguro de que desea eliminar la sala con ID ${salaIdToDelete}?`, async () => {
                     const success = await deleteSala(salaIdToDelete);
                     if (success) {
                         showMessage('Sala eliminada exitosamente.', 'success');
-                        fetchAndRenderSalas(); // Volver a renderizar la lista
+                        await fetchAndRenderSalas(); // Volver a renderizar la lista
                     } else {
                         showMessage('Error al eliminar la sala.', 'error');
                     }
-                }
+                });
             }
         });
-
-        if (cancelEditButton) {
-            cancelEditButton.addEventListener('click', () => {
-                editingSalaId = null;
-                salaForm.reset();
-                salaIdInput.value = '';
-                fetchAndRenderSalas(); // Re-render to remove "Cancelar Edición" button and reset form title
-            });
-        }
     };
 
     fetchAndRenderSalas(); // Llamada inicial para renderizar

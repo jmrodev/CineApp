@@ -13,8 +13,51 @@ const routes = {
     '': renderPeliculasPage // Default route
 };
 
+const mainContentContainer = document.getElementById('app');
+const confirmationModal = document.getElementById('confirmation-modal');
+const confirmMessage = document.getElementById('confirmation-modal-message');
+const confirmOkButton = document.getElementById('confirm-ok-button');
+const confirmCancelButton = document.getElementById('confirm-cancel-button');
+const confirmCloseButton = document.getElementById('confirm-close-button');
+
+let currentConfirmCallback = null;
+
+export function showConfirmModal(message, onConfirmCallback) {
+    confirmMessage.textContent = message;
+    confirmationModal.style.display = 'flex';
+    currentConfirmCallback = onConfirmCallback;
+
+    const handleConfirm = () => {
+        if (currentConfirmCallback) {
+            currentConfirmCallback();
+        }
+        closeConfirmModal();
+    };
+
+    const handleCancel = () => {
+        closeConfirmModal();
+    };
+
+    confirmOkButton.onclick = handleConfirm;
+    confirmCancelButton.onclick = handleCancel;
+    confirmCloseButton.onclick = handleCancel;
+    confirmationModal.onclick = (event) => {
+        if (event.target === confirmationModal) {
+            handleCancel();
+        }
+    };
+}
+
+function closeConfirmModal() {
+    confirmationModal.style.display = 'none';
+    confirmOkButton.onclick = null;
+    confirmCancelButton.onclick = null;
+    confirmCloseButton.onclick = null;
+    confirmationModal.onclick = null;
+    currentConfirmCallback = null;
+}
+
 function router() {
-    const mainContentContainer = document.getElementById('app');
     if (!mainContentContainer) {
         console.error('El contenedor principal con id "app" no fue encontrado.');
         return;

@@ -1,6 +1,7 @@
 import { getFunciones, createFuncion, updateFuncion, deleteFuncion } from '../services/funciones.js';
 import { getPeliculas } from '../services/peliculas.js';
 import { getSalas } from '../services/salas.js';
+import { showConfirmModal } from '../main.js';
 
 /**
  * Formats a Date object into a string suitable for datetime-local input.
@@ -41,34 +42,41 @@ export async function renderFuncionesPage(container) {
         container.innerHTML = `
             <h1>Gestión de Funciones</h1>
 
-            <div class="form-container">
-                <h2>${editingFuncionId ? 'Editar Función' : 'Crear Nueva Función'}</h2>
-                <form id="funcion-form">
-                    <input type="hidden" id="funcion-id" value="">
-                    <div class="form-group">
-                        <label for="pelicula-id">Película:</label>
-                        <select id="pelicula-id" required>
-                            <option value="">Seleccione una película</option>
-                            ${peliculas.map(pelicula => `<option value="${pelicula.pelicula_id}">${pelicula.titulo}</option>`).join('')}
-                        </select>
+            <button id="add-funcion-btn" class="btn-primary">Añadir Nueva Función</button>
+
+            <div class="modal-overlay" id="funcion-form-modal">
+                <div class="modal-content">
+                    <span class="close-button">&times;</span>
+                    <div class="form-section">
+                        <h2 id="modal-title">${editingFuncionId ? 'Editar Función' : 'Crear Nueva Función'}</h2>
+                        <form id="funcion-form">
+                            <input type="hidden" id="funcion-id" value="">
+                            <div class="form-group">
+                                <label for="pelicula-id">Película:</label>
+                                <select id="pelicula-id" required>
+                                    <option value="">Seleccione una película</option>
+                                    ${peliculas.map(pelicula => `<option value="${pelicula.pelicula_id}">${pelicula.titulo}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="sala-id">Sala:</label>
+                                <select id="sala-id" required>
+                                    <option value="">Seleccione una sala</option>
+                                    ${salas.map(sala => `<option value="${sala.sala_id}">${sala.nombre_sala} (Capacidad: ${sala.capacidad})</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="horario">Horario:</label>
+                                <input type="datetime-local" id="horario" required>
+                            </div>
+                            <button type="submit" class="btn-primary" id="submit-funcion-form">${editingFuncionId ? 'Actualizar Función' : 'Crear Función'}</button>
+                            <button type="button" id="cancel-edit" class="btn-secondary">Cancelar</button>
+                        </form>
                     </div>
-                    <div class="form-group">
-                        <label for="sala-id">Sala:</label>
-                        <select id="sala-id" required>
-                            <option value="">Seleccione una sala</option>
-                            ${salas.map(sala => `<option value="${sala.sala_id}">${sala.nombre_sala} (Capacidad: ${sala.capacidad})</option>`).join('')}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="horario">Horario:</label>
-                        <input type="datetime-local" id="horario" required>
-                    </div>
-                    <button type="submit" class="btn-primary">${editingFuncionId ? 'Actualizar Función' : 'Crear Función'}</button>
-                    ${editingFuncionId ? '<button type="button" id="cancel-edit" class="btn-secondary">Cancelar Edición</button>' : ''}
-                </form>
+                </div>
             </div>
 
-            <div class="filter-container form-container">
+            <div class="filter-container">
                 <h2>Filtrar Funciones</h2>
                 <div class="form-group">
                     <label for="filter-pelicula-id">Filtrar por Película:</label>
@@ -97,14 +105,20 @@ export async function renderFuncionesPage(container) {
             <div id="message-container" class="message-container"></div>
         `;
 
-        const funcionesContainer = container.querySelector('#funciones-container');
+        const funcionFormModal = container.querySelector('#funcion-form-modal');
+        const addFuncionBtn = container.querySelector('#add-funcion-btn');
+        const closeButton = container.querySelector('.close-button');
         const funcionForm = container.querySelector('#funcion-form');
+        const funcionesContainer = container.querySelector('#funciones-container');
+        const cancelEditButton = container.querySelector('#cancel-edit');
+        const modalTitle = container.querySelector('#modal-title');
+        const submitFuncionFormBtn = container.querySelector('#submit-funcion-form');
+        const messageContainer = container.querySelector('#message-container');
+
         const funcionIdInput = container.querySelector('#funcion-id');
         const peliculaIdSelect = container.querySelector('#pelicula-id');
         const salaIdSelect = container.querySelector('#sala-id');
         const horarioInput = container.querySelector('#horario');
-        const messageContainer = container.querySelector('#message-container');
-        const cancelEditButton = container.querySelector('#cancel-edit');
 
         const filterPeliculaIdSelect = container.querySelector('#filter-pelicula-id');
         const filterSalaIdSelect = container.querySelector('#filter-sala-id');
@@ -119,6 +133,32 @@ export async function renderFuncionesPage(container) {
                 messageContainer.className = 'message-container';
             }, 3000);
         };
+
+        const openModal = () => {
+            funcionFormModal.style.display = 'flex';
+        };
+
+        const closeModal = () => {
+            funcionFormModal.style.display = 'none';
+            funcionForm.reset();
+            editingFuncionId = null;
+            funcionIdInput.value = '';
+            modalTitle.textContent = 'Crear Nueva Función';
+            submitFuncionFormBtn.textContent = 'Crear Función';
+        };
+
+        // Event listeners for modal
+        addFuncionBtn.addEventListener('click', () => {
+            closeModal(); // Ensure form is reset
+            openModal();
+        });
+        closeButton.addEventListener('click', closeModal);
+        cancelEditButton.addEventListener('click', closeModal);
+        window.addEventListener('click', (event) => {
+            if (event.target === funcionFormModal) {
+                closeModal();
+            }
+        });
 
         funciones.forEach(funcion => {
             const pelicula = peliculas.find(p => p.pelicula_id === funcion.pelicula_id);
@@ -161,10 +201,6 @@ export async function renderFuncionesPage(container) {
                 const updatedFuncion = await updateFuncion(editingFuncionId, funcionData);
                 if (updatedFuncion) {
                     showMessage('Función actualizada exitosamente.', 'success');
-                    editingFuncionId = null; // Resetear modo edición
-                    funcionForm.reset();
-                    funcionIdInput.value = '';
-                    fetchAndRenderFunciones(); // Volver a renderizar la lista
                 } else {
                     showMessage('Error al actualizar la función.', 'error');
                 }
@@ -173,12 +209,13 @@ export async function renderFuncionesPage(container) {
                 const newFuncion = await createFuncion(funcionData);
                 if (newFuncion) {
                     showMessage('Función creada exitosamente.', 'success');
-                    funcionForm.reset();
-                    fetchAndRenderFunciones(); // Volver a renderizar la lista
                 } else {
                     showMessage('Error al crear la función.', 'error');
                 }
             }
+
+            closeModal();
+            await fetchAndRenderFunciones(); // Volver a renderizar la lista
         });
 
         funcionesContainer.addEventListener('click', async (event) => {
@@ -188,33 +225,23 @@ export async function renderFuncionesPage(container) {
                 salaIdSelect.value = event.target.dataset.salaId;
                 horarioInput.value = event.target.dataset.horario; // Already formatted for datetime-local
                 funcionIdInput.value = editingFuncionId;
-                // Scroll to form
-                container.querySelector('.form-container').scrollIntoView({ behavior: 'smooth' });
-                // No re-render here, just update form. Re-rendering would clear the form.
-                // fetchAndRenderFunciones(); 
+                
+                modalTitle.textContent = 'Editar Función';
+                submitFuncionFormBtn.textContent = 'Actualizar Función';
+                openModal();
             } else if (event.target.classList.contains('btn-delete')) {
                 const funcionIdToDelete = parseInt(event.target.dataset.id);
                 if (confirm(`¿Está seguro de que desea eliminar la función con ID ${funcionIdToDelete}?`)) {
                     const success = await deleteFuncion(funcionIdToDelete);
                     if (success) {
                         showMessage('Función eliminada exitosamente.', 'success');
-                        fetchAndRenderFunciones(); // Volver a renderizar la lista
+                        await fetchAndRenderFunciones(); // Volver a renderizar la lista
                     } else {
                         showMessage('Error al eliminar la función.', 'error');
                     }
                 }
             }
         });
-
-        if (cancelEditButton) {
-            cancelEditButton.addEventListener('click', () => {
-                editingFuncionId = null;
-                funcionForm.reset();
-                funcionIdInput.value = '';
-                // No re-render here, just clear form. Re-rendering would clear the form.
-                // fetchAndRenderFunciones(); 
-            });
-        }
 
         applyFiltersButton.addEventListener('click', () => {
             currentFilters = {};

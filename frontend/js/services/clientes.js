@@ -36,7 +36,8 @@ export async function createCliente(cliente) {
             body: JSON.stringify(cliente),
         });
         if (!response.ok) {
-            throw new Error(`Error en la red: ${response.statusText}`);
+            const errorData = await response.json(); // Try to parse error body
+            throw new Error(`Error en la red: ${response.statusText}. Detalles: ${JSON.stringify(errorData)}`);
         }
         return await response.json();
     } catch (error) {
