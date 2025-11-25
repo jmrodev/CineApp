@@ -21,12 +21,12 @@ ALTER TABLE Reserva AUTO_INCREMENT = 1;
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- Sample data for Pelicula
-INSERT INTO Pelicula (titulo, genero) VALUES
-('Inception', 'Sci-Fi'),
-('The Dark Knight', 'Action'),
-('Interstellar', 'Sci-Fi'),
-('Pulp Fiction', 'Crime'),
-('Forrest Gump', 'Drama');
+INSERT INTO Pelicula (titulo, genero, imagen) VALUES
+('Inception', 'Sci-Fi', 'https://image.tmdb.org/t/p/w500/inception.jpg'),
+('The Dark Knight', 'Action', 'https://image.tmdb.org/t/p/w500/darkknight.jpg'),
+('Interstellar', 'Sci-Fi', 'https://image.tmdb.org/t/p/w500/interstellar.jpg'),
+('Pulp Fiction', 'Crime', 'https://image.tmdb.org/t/p/w500/pulpfiction.jpg'),
+('Forrest Gump', 'Drama', 'https://image.tmdb.org/t/p/w500/forrestgump.jpg');
 
 -- Sample data for Sala
 INSERT INTO Sala (nombre_sala, capacidad) VALUES

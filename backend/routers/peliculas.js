@@ -29,13 +29,13 @@ router.get('/:id', async (req, res) => {
 
 // CREATE a new pelicula
 router.post('/', async (req, res) => {
-  const { titulo, genero } = req.body;
+  const { titulo, genero, imagen } = req.body;
   if (!titulo) {
     return res.status(400).json({ message: 'titulo is required' });
   }
   try {
-    const [result] = await pool.query('INSERT INTO Pelicula (titulo, genero) VALUES (?, ?)', [titulo, genero]);
-    res.status(201).json({ pelicula_id: result.insertId, titulo, genero });
+    const [result] = await pool.query('INSERT INTO Pelicula (titulo, genero, imagen) VALUES (?, ?, ?)', [titulo, genero, imagen]);
+    res.status(201).json({ pelicula_id: result.insertId, titulo, genero, imagen });
   } catch (error) {
     console.error(error); // Log the error
     res.status(500).json({ error: error.message });
@@ -44,16 +44,16 @@ router.post('/', async (req, res) => {
 
 // UPDATE a pelicula
 router.put('/:id', async (req, res) => {
-  const { titulo, genero } = req.body;
+  const { titulo, genero, imagen } = req.body;
   if (!titulo) {
     return res.status(400).json({ message: 'titulo is required' });
   }
   try {
-    const [result] = await pool.query('UPDATE Pelicula SET titulo = ?, genero = ? WHERE pelicula_id = ?', [titulo, genero, req.params.id]);
+    const [result] = await pool.query('UPDATE Pelicula SET titulo = ?, genero = ?, imagen = ? WHERE pelicula_id = ?', [titulo, genero, imagen, req.params.id]);
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'Pelicula not found' });
     }
-    res.json({ pelicula_id: req.params.id, titulo, genero });
+    res.json({ pelicula_id: req.params.id, titulo, genero, imagen });
   } catch (error) {
     console.error(error); // Log the error
     res.status(500).json({ error: error.message });

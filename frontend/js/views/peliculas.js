@@ -19,6 +19,8 @@ export async function renderPeliculasPage(container) {
                     <input type="text" id="titulo" required>
                     <label for="genero">Género:</label>
                     <input type="text" id="genero" required>
+                    <label for="imagen">URL de Imagen:</label>
+                    <input type="text" id="imagen">
                     <button type="submit">${currentEditingMovieId ? 'Actualizar Película' : 'Añadir Película'}</button>
                     <button type="button" id="cancel-edit" style="display:none;">Cancelar Edición</button>
                 </form>
@@ -46,8 +48,9 @@ export async function renderPeliculasPage(container) {
         const movieId = document.getElementById('movie-id').value;
         const titulo = document.getElementById('titulo').value;
         const genero = document.getElementById('genero').value;
+        const imagen = document.getElementById('imagen').value;
 
-        const movieData = { titulo, genero };
+        const movieData = { titulo, genero, imagen };
 
         if (movieId) {
             // Update existing movie
@@ -91,11 +94,12 @@ async function loadMovies(moviesListContainer) {
 
     moviesListContainer.innerHTML = movies.map(movie => `
         <div class="movie-card">
+            ${movie.imagen ? `<img src="${movie.imagen}" alt="${movie.titulo}" class="movie-image">` : ''}
             <h2>${movie.titulo}</h2>
             <p><strong>Género:</strong> ${movie.genero}</p>
             <div class="movie-actions">
-                <button class="edit-movie" data-id="${movie.id}">Editar</button>
-                <button class="delete-movie" data-id="${movie.id}">Eliminar</button>
+                <button class="edit-movie" data-id="${movie.pelicula_id}">Editar</button>
+                <button class="delete-movie" data-id="${movie.pelicula_id}">Eliminar</button>
             </div>
         </div>
     `).join('');
@@ -106,10 +110,11 @@ async function loadMovies(moviesListContainer) {
             const movieId = event.target.dataset.id;
             const movie = await getPeliculaById(parseInt(movieId));
             if (movie) {
-                document.getElementById('movie-id').value = movie.id;
+                document.getElementById('movie-id').value = movie.pelicula_id;
                 document.getElementById('titulo').value = movie.titulo;
                 document.getElementById('genero').value = movie.genero;
-                currentEditingMovieId = movie.id;
+                document.getElementById('imagen').value = movie.imagen || ''; // Populate image field
+                currentEditingMovieId = movie.pelicula_id;
                 const movieForm = document.querySelector('#movie-form');
                 movieForm.querySelector('button[type="submit"]').textContent = 'Actualizar Película';
                 document.querySelector('#cancel-edit').style.display = 'inline-block';

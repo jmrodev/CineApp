@@ -11,6 +11,9 @@ schemas:
       genero:
         type: string
         example: 'Sci-Fi'
+      imagen:
+        type: string
+        example: 'https://image.tmdb.org/t/p/w500/thematrix.jpg'
   PeliculaInput:
     type: object
     properties:
@@ -20,6 +23,9 @@ schemas:
       genero:
         type: string
         example: 'Sci-Fi'
+      imagen:
+        type: string
+        example: 'https://image.tmdb.org/t/p/w500/thematrix.jpg'
   Sala:
     type: object
     properties:

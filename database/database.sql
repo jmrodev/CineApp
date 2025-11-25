@@ -8,7 +8,8 @@ USE CineApp;
 CREATE TABLE IF NOT EXISTS Pelicula (
     pelicula_id INT PRIMARY KEY AUTO_INCREMENT,
     titulo VARCHAR(255) NOT NULL,
-    genero VARCHAR(255)
+    genero VARCHAR(255),
+    imagen VARCHAR(255) NULL
 );
 
 -- Create Sala table

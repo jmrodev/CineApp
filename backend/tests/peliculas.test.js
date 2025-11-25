@@ -19,7 +19,7 @@ describe('Peliculas API', () => {
   let peliculaId;
 
   it('should create a new pelicula', async () => {
-    const newPelicula = { titulo: 'Test Pelicula', genero: 'Accion' };
+    const newPelicula = { titulo: 'Test Pelicula', genero: 'Accion', imagen: 'http://example.com/test.jpg' };
     const res = await request(app)
       .post('/api/peliculas')
       .send(newPelicula);
@@ -27,6 +27,7 @@ describe('Peliculas API', () => {
     expect(res.body).toHaveProperty('pelicula_id');
     expect(res.body.titulo).toEqual(newPelicula.titulo);
     expect(res.body.genero).toEqual(newPelicula.genero);
+    expect(res.body.imagen).toEqual(newPelicula.imagen);
     peliculaId = res.body.pelicula_id;
   });
 
@@ -50,13 +51,14 @@ describe('Peliculas API', () => {
   });
 
   it('should update a pelicula by ID', async () => {
-    const updatedPelicula = { titulo: 'Updated Pelicula', genero: 'Drama' };
+    const updatedPelicula = { titulo: 'Updated Pelicula', genero: 'Drama', imagen: 'http://example.com/updated.jpg' };
     const res = await request(app)
       .put(`/api/peliculas/${peliculaId}`)
       .send(updatedPelicula);
     expect(res.statusCode).toEqual(200);
     expect(res.body.titulo).toEqual(updatedPelicula.titulo);
     expect(res.body.genero).toEqual(updatedPelicula.genero);
+    expect(res.body.imagen).toEqual(updatedPelicula.imagen);
   });
 
   it('should return 404 if pelicula not found for update', async () => {
